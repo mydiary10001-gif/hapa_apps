@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>myASNB — HAPA Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1B35CC;
+  --blue-bright:#2040E0;
+  --blue-dark:#1228AA;
+  --cyan:#00AEEF;
+  --orange:#F57C20;
+  --white:#FFFFFF;
+  --gray-50:#F5F6FA;
+  --gray-100:#ECEEF5;
+  --gray-200:#D8DBE8;
+  --gray-400:#9AA0B8;
+  --gray-600:#5C637A;
+  --gray-800:#1A1E35;
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+body{font-family:var(--font);background:white;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+.frame{width:390px;height:844px;background:white;border-radius:48px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,0.3),0 0 0 10px #111,0 0 0 12px #333;display:flex;flex-direction:column;position:relative;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:34px;background:#111;border-radius:0 0 20px 20px;z-index:200;}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;animation:fadeIn 0.25s ease;}
+.screen.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sb{height:44px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;flex-shrink:0;font-size:13px;font-weight:700;}
+.sb-icons{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* ── Phone frame ── */
+.frame{width:390px;height:844px;background:white;border-radius:48px;overflow:hidden;
+  box-shadow:0 40px 80px rgba(0,0,0,0.3),0 0 0 10px #111,0 0 0 12px #333;
+  display:flex;flex-direction:column;position:relative;}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:120px;height:34px;background:#111;border-radius:0 0 20px 20px;z-index:200;}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;animation:fadeIn 0.25s ease;}
+.screen.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.sb{height:44px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;flex-shrink:0;font-size:13px;font-weight:700;}
+.sb-icons{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* ── Status bar icons ── */
+.sig-icon{display:flex;align-items:flex-end;gap:1px;}
+.sig-icon span{background:currentColor;border-radius:1px;width:3px;}
+
+/* UTAMA */
+#s-utama{background:var(--gray-50);}
+.utama-header{background:var(--blue);padding:10px 18px 20px;flex-shrink:0;}
+.promo-bar{background:rgba(0,0,0,0.2);border-radius:30px;padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;}
+.promo-bar span{font-size:12px;font-weight:600;color:white;}
+.jnp-label{font-size:12px;color:rgba(255,255,255,0.8);font-weight:500;margin-bottom:4px;}
+.jnp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.jnp-amount{font-size:26px;font-weight:800;color:white;display:flex;align-items:center;gap:10px;}
+.jnp-icons{display:flex;gap:8px;}
+.jnp-icon-btn{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.account-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.acc-card{background:rgba(255,255,255,0.15);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.acc-icon{width:38px;height:38px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.acc-icon span{font-size:10px;font-weight:800;color:white;}
+
+/* Quick services row */
+.services-quick{background:white;padding:14px 8px 12px;display:flex;border-bottom:1px solid var(--gray-100);}
+.sq-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;}
+.sq-icon-wrap{width:54px;height:54px;display:flex;align-items:center;justify-content:center;}
+.sq-label{font-size:10px;font-weight:600;color:var(--gray-600);text-align:center;line-height:1.3;}
+
+/* Task card */
+.task-card{margin:14px 14px 0;background:white;border-radius:14px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.task-title{font-size:16px;font-weight:800;color:var(--gray-800);margin-bottom:12px;}
+.task-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-100);cursor:pointer;}
+.task-item:last-child{border-bottom:none;padding-bottom:0;}
+.task-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;}
+.task-dot.on{background:var(--blue);}
+.task-dot.off{border:2px solid var(--gray-200);background:white;}
+.task-text{font-size:13px;font-weight:600;flex:1;}
+.task-text.muted{color:var(--gray-400);}
+.section-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px 8px;}
+.section-title{font-size:14px;font-weight:700;color:var(--gray-800);}
+.section-link{font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;}
+
+/* ── Bottom nav ── */
+.bnav{height:76px;background:white;border-top:1px solid var(--gray-100);display:flex;align-items:flex-start;padding-top:8px;flex-shrink:0;position:relative;}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
+.bnav-icon{width:24px;height:24px;}
+.bnav-label{font-size:10px;font-weight:600;}
+.bnav-item.on .bnav-label{color:var(--blue);}
+.bnav-item:not(.on) .bnav-label{color:var(--gray-400);}
+.bnav-dot{width:4px;height:4px;border-radius:50%;background:var(--blue);margin-top:-1px;}
+.fab{position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:54px;height:54px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(27,53,204,0.5);cursor:pointer;}
+
+/* LAGI */
+#s-lagi{background:white;}
+.perkhid-title{font-size:20px;font-weight:800;color:var(--gray-800);padding:16px 18px 10px;}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);padding:0 8px;}
+.svc-item{display:flex;flex-direction:column;align-items:center;padding:12px 6px;gap:8px;cursor:pointer;}
+.svc-icon{width:64px;height:64px;display:flex;align-items:center;justify-content:center;}
+.svc-label{font-size:11px;font-weight:600;color:var(--gray-800);text-align:center;line-height:1.3;}
+.hibah-promo{margin:6px 14px 4px;background:linear-gradient(135deg,var(--blue) 0%,var(--blue-bright) 100%);border-radius:16px;padding:15px;display:flex;align-items:center;gap:12px;cursor:pointer;position:relative;overflow:hidden;}
+.hibah-promo::before{content:'';position:absolute;top:-20px;right:-20px;width:90px;height:90px;background:rgba(255,255,255,0.08);border-radius:50%;}
+.hibah-promo-icon{width:44px;height:44px;background:rgba(255,255,255,0.18);border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.hibah-promo-title{font-size:13px;font-weight:800;color:white;margin-bottom:3px;}
+.hibah-promo-sub{font-size:11px;color:rgba(255,255,255,0.7);font-weight:500;}
+.new-badge{position:absolute;top:10px;right:10px;background:var(--orange);color:white;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;}
+
+/* ── Shared header ── */
+.hdr{background:var(--blue);padding:10px 18px 20px;flex-shrink:0;}
+.back-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;}
+.back-btn{width:32px;height:32px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.back-lbl{font-size:15px;font-weight:700;color:white;}
+.hero-row{display:flex;align-items:center;gap:14px;}
+.hero-icon{width:52px;height:52px;background:rgba(255,255,255,0.18);border-radius:16px;display:flex;align-items:center;justify-content:center;}
+.hero-title{font-size:19px;font-weight:800;color:white;margin-bottom:3px;}
+.hero-sub{font-size:11px;color:rgba(255,255,255,0.65);font-weight:500;}
+
+/* ── Status ribbon ── */
+.status-ribbon{background:white;margin:0 16px;border-radius:0 0 16px 16px;padding:13px 15px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 14px rgba(0,0,0,0.08);}
+.status-lhs{display:flex;align-items:center;gap:11px;}
+.status-circle{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
+.status-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;color:var(--gray-400);}
+.status-val-ok{font-size:14px;font-weight:800;color:var(--green);}
+.status-val-no{font-size:14px;font-weight:800;color:var(--orange);}
+.pill-ok{background:var(--green-l);color:var(--green);font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid rgba(0,168,107,0.2);}
+.pill-no{background:#FFF3E0;color:var(--orange);font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px;border:1px solid rgba(245,124,32,0.2);}
+
+/* ── Cards ── */
+.card{background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.card-title{font-size:12px;font-weight:700;color:var(--gray-800);margin-bottom:8px;}
+.section-lbl{font-size:14px;font-weight:700;color:var(--gray-800);padding:14px 16px 8px;}
+.info-notice{margin:6px 16px 10px;background:#FFF8EC;border:1px solid rgba(245,124,32,0.25);border-radius:11px;padding:11px 13px;display:flex;gap:9px;}
+.info-notice-text{font-size:11px;color:#7A4500;line-height:1.55;font-weight:500;}
+
+/* ── Stat grid ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 4px;}
+.hstat{background:white;border-radius:13px;padding:12px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.hstat-lbl{font-size:10px;color:var(--gray-400);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;}
+.hstat-val{font-size:17px;font-weight:800;color:var(--gray-800);}
+.hstat-sub{font-size:10px;color:var(--gray-400);margin-top:2px;font-weight:500;}
+
+
+/* ── Section rows ── */
+.action-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:white;border-radius:14px;margin:0 16px 10px;box-shadow:0 1px 4px rgba(0,0,0,0.06);cursor:pointer;}
+.action-row:active{background:var(--gray-50);}
+.action-row-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.action-row-text{flex:1;margin-left:12px;}
+.action-row-title{font-size:13px;font-weight:700;color:var(--gray-800);}
+.action-row-sub{font-size:11px;color:var(--gray-400);margin-top:2px;}
+
+/* ── Locked section ── */
+.locked-card{margin:0 16px 12px;background:white;border-radius:14px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,0.06);display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;}
+.locked-card:active{background:var(--gray-50);}
+.lock-icon-wrap{width:52px;height:52px;background:var(--gray-100);border-radius:16px;display:flex;align-items:center;justify-content:center;}
+.locked-title{font-size:14px;font-weight:700;color:var(--gray-800);}
+.locked-sub{font-size:12px;color:var(--gray-400);text-align:center;}
+.face-id-btn{display:flex;align-items:center;gap:6px;background:var(--blue);color:white;font-size:13px;font-weight:700;padding:9px 18px;border-radius:10px;cursor:pointer;border:none;font-family:var(--font);}
+
+/* ── Fund cards ── */
+.hfc{background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.hfc-top{display:flex;align-items:center;gap:11px;margin-bottom:11px;}
+.hfc-dot{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white;flex-shrink:0;}
+.hfc-name{font-size:13px;font-weight:700;color:var(--gray-800);margin-bottom:2px;}
+.hfc-sub{font-size:10px;color:var(--gray-400);font-weight:500;}
+.hfc-line{height:1px;background:var(--gray-100);margin-bottom:10px;}
+.hfc-row{display:flex;justify-content:space-between;margin-bottom:6px;}
+.hfc-rl{font-size:11px;color:var(--gray-400);font-weight:500;}
+.hfc-rv{font-size:11px;font-weight:700;color:var(--gray-800);}
+.hfc-rv.hl{color:var(--blue);}
+.hfc-rv.gr{color:var(--green);}
+.nom-tag{display:inline-flex;align-items:center;gap:5px;background:#EEF0FB;color:var(--blue);font-size:10px;font-weight:700;padding:4px 9px;border-radius:20px;margin-top:8px;}
+
+/* ── LEARN MORE MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-sheet{background:white;border-radius:24px 24px 0 0;width:390px;max-height:90vh;overflow-y:auto;padding:0 0 32px;}
+.modal-handle{width:40px;height:4px;background:var(--gray-200);border-radius:2px;margin:12px auto 16px;}
+.modal-hero{background:linear-gradient(135deg,var(--blue) 0%,var(--blue-bright) 100%);padding:20px;margin:0 16px;border-radius:14px;margin-bottom:16px;}
+.info-step{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--gray-100);}
+.step-num-circle{width:28px;height:28px;border-radius:50%;background:var(--blue);color:white;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.modal-apply-btn{margin:16px;background:var(--blue);color:white;border:none;border-radius:14px;width:calc(100% - 32px);height:50px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;}
+
+/* ── FACE ID MODAL ── */
+.faceid-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:500;align-items:center;justify-content:center;}
+.faceid-overlay.open{display:flex;}
+.faceid-sheet{background:white;border-radius:24px;width:340px;padding:28px 24px;text-align:center;}
+.faceid-ring{width:90px;height:90px;border-radius:50%;border:3px solid var(--blue);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;position:relative;}
+.faceid-ring.scanning{border-color:var(--green);animation:pulse 1s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,168,107,0.3)}50%{box-shadow:0 0 0 12px rgba(0,168,107,0)}}
+.faceid-ring.done{border-color:var(--green);}
+
+/* ── PROGRESS STEPS ── */
+.steps-bar{display:flex;background:white;border-bottom:1px solid var(--gray-100);padding:12px 16px;gap:0;overflow-x:auto;flex-shrink:0;}
+.steps-bar::-webkit-scrollbar{display:none;}
+.step-dot{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:60px;cursor:pointer;}
+.step-circle-sm{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+.step-dot.todo .step-circle-sm{background:var(--gray-100);color:var(--gray-400);}
+.step-dot.active .step-circle-sm{background:var(--blue);color:white;}
+.step-dot.done .step-circle-sm{background:var(--green);color:white;}
+.step-lbl-sm{font-size:9px;font-weight:600;text-align:center;line-height:1.2;color:var(--gray-400);}
+.step-dot.active .step-lbl-sm{color:var(--blue);}
+.step-dot.done .step-lbl-sm{color:var(--green);}
+.step-line{flex:1;height:2px;background:var(--gray-200);align-self:flex-end;margin-bottom:17px;}
+.step-line.done{background:var(--green);}
+
+/* ── FORM PANELS ── */
+.panel{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.panel.active{display:flex;}
+.form-scroll{flex:1;overflow-y:auto;padding:16px;}
+.form-scroll::-webkit-scrollbar{display:none;}
+.sec-card{background:white;border-radius:14px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.sec-head{background:#1B35CC;color:white;font-weight:700;font-size:12px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.sec-body{padding:14px;}
+.fgroup{margin-bottom:12px;}
+.flabel{font-size:11px;font-weight:700;color:var(--gray-600);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px;display:block;}
+.req{color:var(--red);}
+.finput{width:100%;height:42px;border:1.5px solid var(--gray-200);border-radius:10px;padding:0 12px;font-family:var(--font);font-size:13px;color:var(--gray-800);background:var(--gray-50);outline:none;}
+.finput:focus{border-color:var(--blue);background:white;}
+.finput:disabled{background:var(--gray-100);color:var(--gray-400);cursor:not-allowed;}
+.fselect{width:100%;height:42px;border:1.5px solid var(--gray-200);border-radius:10px;padding:0 12px;font-family:var(--font);font-size:13px;color:var(--gray-800);background:var(--gray-50);}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.radio-row{display:flex;gap:16px;margin-top:6px;}
+.radio-lbl{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--gray-800);cursor:pointer;}
+.panel-footer{padding:14px 16px;background:white;border-top:1px solid var(--gray-100);display:flex;gap:10px;flex-shrink:0;}
+.btn-primary{flex:1;height:44px;background:var(--blue);color:white;border:none;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;}
+.btn-sec{height:44px;background:white;color:var(--blue);border:1.5px solid var(--blue);border-radius:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;padding:0 18px;}
+
+/* ── Allocation table ── */
+.alloc-wrap{overflow-x:auto;margin-top:8px;}
+.alloc-table{border-collapse:collapse;width:100%;min-width:500px;font-size:11px;}
+.alloc-table th{background:var(--blue);color:white;padding:8px 6px;text-align:center;font-weight:700;}
+.alloc-table th:first-child{text-align:left;padding-left:10px;}
+.alloc-table td{padding:7px 6px;text-align:center;border-bottom:1px solid var(--gray-100);}
+.alloc-table td:first-child{text-align:left;font-weight:600;padding-left:10px;}
+.alloc-input{width:50px;height:30px;border:1.5px solid var(--gray-200);border-radius:6px;text-align:center;font-family:var(--font);font-size:12px;}
+
+/* ── Upload row ── */
+.upload-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between; /* ✅ key fix */
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid var(--gray-100);
+}
+.upload-row:last-child{border-bottom:none;}
+.upload-lbl{flex:1;font-size:12px;font-weight:600;color:var(--gray-800);}
+.upload-role{font-size:10px;color:var(--gray-400);margin-top:2px;}
+.upload-btn{display:inline-flex;align-items:center;gap:5px;background:var(--blue);color:white;font-size:11px;font-weight:700;padding:5px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;}
+.upload-btn input{display:none;}
+.upload-status{font-size:10px;color:var(--gray-400);margin-top:3px;}
+.upload-status.ok{color:var(--green);}
+
+/* ── Appointment ── */
+.appt-option{display:flex;align-items:center;gap:12px;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:12px;padding:12px;cursor:pointer;margin-bottom:8px;}
+.appt-option.selected{border-color:var(--blue);background:#EEF0FB;}
+.appt-icon{width:36px;height:36px;border-radius:10px;background:var(--blue);display:flex;align-items:center;justify-content:center;}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--gray-800);color:white;font-size:13px;font-weight:600;padding:11px 18px;border-radius:12px;z-index:9999;transition:transform 0.3s;white-space:nowrap;pointer-events:none;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ── Checkbox fund selector ── */
+.fund-checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.fund-check-lbl{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--gray-800);padding:8px;background:var(--gray-50);border-radius:8px;cursor:pointer;}
+.fund-check-lbl input{accent-color:var(--blue);}
+
+/* ── Penerima count ── */
+.count-row{display:flex;align-items:center;gap:10px;}
+.count-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--blue);background:white;color:var(--blue);font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.count-val{font-size:18px;font-weight:800;color:var(--gray-800);min-width:24px;text-align:center;}
+
+/* Review box */
+.rv-box{background:var(--gray-50);border-radius:10px;padding:12px;margin-bottom:8px;}
+.rv-row{display:flex;justify-content:space-between;margin-bottom:5px;}
+.rv-label{font-size:11px;color:var(--gray-400);}
+.rv-val{font-size:12px;font-weight:700;color:var(--gray-800);text-align:right;max-width:60%;}
+</style>
+</head>
+<body>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<!-- ── FACE ID MODAL ── -->
+<div class="faceid-overlay" id="faceid-overlay">
+  <div class="faceid-sheet">
+    <div style="font-size:17px;font-weight:800;color:var(--gray-800);margin-bottom:6px;">Face ID Diperlukan</div>
+    <div style="font-size:12px;color:var(--gray-400);margin-bottom:20px;">Sahkan identiti anda untuk mengakses butiran HAPA anda.</div>
+    <div class="faceid-ring" id="faceid-ring">
+      <svg id="faceIcon" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5">
+        <path d="M9 9h.01M15 9h.01M8 13s1.5 2 4 2 4-2 4-2"/>
+        <circle cx="12" cy="12" r="10"/>
+      </svg>
+    </div>
+    <div id="faceid-msg" style="font-size:13px;color:var(--gray-600);margin-bottom:20px;">Tekan butang di bawah untuk mengimbas wajah</div>
+    <button onclick="startFaceID()" id="faceid-btn" style="width:100%;height:46px;background:var(--blue);color:white;border:none;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;">
+      🪪 Imbas Face ID
+    </button>
+    <button onclick="closeFaceID()" style="width:100%;height:40px;background:transparent;color:var(--gray-400);border:none;font-family:var(--font);font-size:13px;cursor:pointer;margin-top:8px;">Batal</button>
+  </div>
+</div>
+
+<!-- ── LEARN MORE MODAL ── -->
+<div class="modal-overlay" id="learnModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="padding:0 16px;margin-bottom:12px;">
+      <div style="font-size:18px;font-weight:800;color:var(--gray-800);">Apa itu HAPA?</div>
+      <div style="font-size:12px;color:var(--gray-400);margin-top:3px;">Hibah Amanah Portal ASNB</div>
+    </div>
+    <div class="modal-hero">
+      <div style="font-size:13px;font-weight:800;color:white;margin-bottom:6px;">🤲 Pemberian Penuh Kasih</div>
+      <p style="font-size:12px;color:rgba(255,255,255,0.82);line-height:1.65;">HAPA membolehkan anda menghibahkan unit amanah ASNB kepada penerima pilihan anda — lebih pantas, lebih selamat, dan tanpa proses faraid yang panjang.</p>
+    </div>
+    <div class="info-step">
+      <div class="step-num-circle">1</div>
+      <div><div style="font-size:13px;font-weight:700;color:var(--gray-800);">Daftar & Isi Borang</div><div style="font-size:11px;color:var(--gray-400);margin-top:3px;">Maklumat pemberi, penerima dan pengagihan unit.</div></div>
+    </div>
+    <div class="info-step">
+      <div class="step-num-circle">2</div>
+      <div><div style="font-size:13px;font-weight:700;color:var(--gray-800);">Tandatangan Akad</div><div style="font-size:11px;color:var(--gray-400);margin-top:3px;">Muat turun dokumen Akad/Lafaz yang telah diisi dan tandatangan bersama saksi.</div></div>
+    </div>
+    <div class="info-step">
+      <div class="step-num-circle">3</div>
+      <div><div style="font-size:13px;font-weight:700;color:var(--gray-800);">Serahkan ke Cawangan</div><div style="font-size:11px;color:var(--gray-400);margin-top:3px;">Hantar dokumen lengkap ke cawangan ASNB dalam 90 hari.</div></div>
+    </div>
+    <div class="info-step" style="border-bottom:none;">
+      <div class="step-num-circle" style="background:var(--green);">✓</div>
+      <div><div style="font-size:13px;font-weight:700;color:var(--gray-800);">HAPA Aktif!</div><div style="font-size:11px;color:var(--gray-400);margin-top:3px;">Unit anda akan dipindahkan kepada penerima apabila anda meninggal dunia.</div></div>
+    </div>
+    <div style="padding:0 16px;margin-top:12px;">
+      <div style="font-size:11px;color:var(--gray-400);background:var(--gray-50);border-radius:10px;padding:10px;line-height:1.6;">⚠️ Pendaftaran awal melalui myASNB adalah <strong>percuma</strong>. Yuran hanya dikenakan apabila dokumen diserahkan ke cawangan ASNB.</div>
+    </div>
+    <button class="modal-apply-btn" onclick="closeLearnModal();show('s-prereg');">Mohon Sekarang →</button>
+    <button onclick="closeLearnModal()" style="width:100%;height:40px;background:transparent;color:var(--gray-400);border:none;font-family:var(--font);font-size:13px;cursor:pointer;">Tutup</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PHONE FRAME
+══════════════════════════════════════════ -->
+<div class="frame">
+  <div class="notch"></div>
+
+  <!-- ════════════════════════════
+       SCREEN: UTAMA (home)
+  ════════════════════════════ -->
+  <!-- ═══ UTAMA ═══ -->
+  <div class="screen active" id="s-utama">
+    <div class="sb" style="background:var(--blue);color:white;"><span>11:53</span>
+      <div class="sb-icons">
+        <svg width="15" height="11" viewBox="0 0 20 14" fill="white"><rect x="0" y="4" width="3" height="10" rx="1"/><rect x="4.5" y="2.5" width="3" height="11.5" rx="1"/><rect x="9" y="1" width="3" height="13" rx="1"/><rect x="13.5" y="0" width="3" height="14" rx="1" opacity=".3"/></svg>
+        <span>4G</span>
+        <svg width="22" height="12" viewBox="0 0 28 14" fill="none"><rect x=".5" y=".5" width="24" height="13" rx="3" stroke="white" stroke-opacity=".5"/><rect x="2" y="2" width="18" height="10" rx="2" fill="white"/><path d="M26 4.5v5a2.5 2.5 0 000-5z" fill="white" opacity=".4"/></svg>
+      </div>
+    </div>
+    <div class="scroll">
+      <div class="utama-header">
+        <div class="promo-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+          <span>Dapatkan RM25 untuk Ria</span>
+        </div>
+        <div class="jnp-label">Jumlah Nilai Pelaburan</div>
+        <div class="jnp-row">
+          <div class="jnp-amount">RM305,145.98
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div class="jnp-icons">
+            <div class="jnp-icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+            <div class="jnp-icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+            <div class="jnp-icon-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+          </div>
+        </div>
+        <div class="account-cards">
+          <div class="acc-card">
+            <div class="acc-icon"><span>RM</span></div>
+            <div><div style="font-size:11px;color:rgba(255,255,255,0.75);font-weight:500;margin-bottom:2px;">Unit Amanah</div><div style="font-size:12px;font-weight:700;color:white;">RM305,145....</div></div>
+          </div>
+          <div class="acc-card" style="background:rgba(255,255,255,0.1);">
+            <div style="width:38px;height:38px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div style="flex:1;"><div style="height:8px;background:rgba(255,255,255,0.3);border-radius:4px;margin-bottom:5px;"></div><div style="height:8px;background:rgba(255,255,255,0.2);border-radius:4px;width:65%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick services: Auto Labur | Pelaburan Pihak Ketiga | ASNB COVR | Lagi -->
+      <div class="services-quick">
+        <div class="sq-item">
+          <div class="sq-icon-wrap">
+            <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+              <rect x="6" y="14" width="40" height="38" rx="6" fill="#00AEEF"/>
+              <rect x="6" y="22" width="40" height="9" fill="#0088BB"/>
+              <rect x="12" y="34" width="6" height="5" rx="1" fill="white"/>
+              <rect x="21" y="34" width="6" height="5" rx="1" fill="white"/>
+              <rect x="30" y="34" width="6" height="5" rx="1" fill="white"/>
+              <rect x="12" y="42" width="6" height="5" rx="1" fill="white"/>
+              <rect x="21" y="42" width="6" height="5" rx="1" fill="white"/>
+              <circle cx="48" cy="16" r="11" fill="#F57C20"/>
+              <path d="M43.5 16a4.5 4.5 0 104.5 4.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M48 11.5v4.5l2.8 1.8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="sq-label">Auto Labur</div>
+        </div>
+        <div class="sq-item">
+          <div class="sq-icon-wrap">
+            <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="6" width="34" height="44" rx="5" fill="#00AEEF"/>
+              <rect x="14" y="14" width="22" height="3" rx="1.5" fill="white" opacity=".7"/>
+              <rect x="14" y="20" width="16" height="3" rx="1.5" fill="white" opacity=".5"/>
+              <circle cx="28" cy="40" r="10" fill="#F57C20"/>
+              <circle cx="36" cy="34" r="10" fill="#00AEEF" stroke="white" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="sq-label">Pelaburan Pihak Ketiga</div>
+        </div>
+        <div class="sq-item">
+          <div class="sq-icon-wrap">
+            <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+              <path d="M32 8L54 20v8H10v-8z" fill="#00AEEF"/>
+              <ellipse cx="32" cy="22" rx="10" ry="12" fill="#F57C20"/>
+              <ellipse cx="32" cy="22" rx="5" ry="6" fill="#00AEEF"/>
+              <circle cx="24" cy="34" r="7" fill="#F57C20"/>
+              <circle cx="40" cy="34" r="7" fill="#F57C20"/>
+            </svg>
+          </div>
+          <div class="sq-label">ASNB COVR</div>
+        </div>
+        <div class="sq-item" onclick="show('s-lagi')">
+          <div class="sq-icon-wrap">
+            <svg width="52" height="52" viewBox="0 0 64 64" fill="none">
+              <rect x="7" y="7" width="21" height="21" rx="4" fill="#F57C20"/>
+              <rect x="36" y="7" width="21" height="21" rx="4" fill="#00AEEF"/>
+              <rect x="7" y="36" width="21" height="21" rx="4" fill="#00AEEF"/>
+              <rect x="36" y="36" width="21" height="21" rx="4" fill="#00AEEF"/>
+            </svg>
+          </div>
+          <div class="sq-label">Lagi</div>
+        </div>
+      </div>
+
+      <!-- Task card -->
+      <div class="task-card">
+        <div class="task-title">Anda ada 2 tugasan lagi</div>
+        <div class="task-item">
+          <div class="task-dot on"></div>
+          <div class="task-text" style="color:var(--gray-800);">Tetapkan imej keselamatan</div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="task-item">
+          <div class="task-dot off"></div>
+          <div class="task-text muted">Sahkan e-mel</div>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <div class="section-title">Dana Popular</div>
+        <div class="section-link">Lihat Semua</div>
+      </div>
+      <div style="padding:0 14px 8px;display:flex;gap:10px;">
+        <div style="flex:1;background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+          <div style="width:42px;height:42px;background:#EEF0FB;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+            <img src="asb.jpg" style="width:100%;height:100%;object-fit:cover;"></div>
+          <div style="font-size:12px;font-weight:700;color:var(--gray-800);margin-bottom:3px;">ASB</div>
+          <div style="font-size:10px;color:var(--gray-400);">RM 1.00/unit</div>
+        </div>
+        <div style="flex:1;background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+          <div style="width:42px;height:42px;background:#EEF0FB;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+            <img src="asb 2.jpg" style="width:100%;height:100%;object-fit:cover;"></div>
+          <div style="font-size:12px;font-weight:700;color:var(--gray-800);margin-bottom:3px;">ASB 2 Didik</div>
+          <div style="font-size:10px;color:var(--gray-400);">RM 1.00/unit</div>
+        </div>
+        <div style="flex:1;background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+          <div style="width:42px;height:42px;background:#EEF0FB;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+            <img src="asm.jpg" style="width:100%;height:100%;object-fit:cover;"></div>
+          <div style="font-size:12px;font-weight:700;color:var(--gray-800);margin-bottom:3px;">ASM</div>
+          <div style="font-size:10px;color:var(--gray-400);">RM 1.00/unit</div>
+        </div>
+      </div>
+      <div style="height:28px;"></div>
+    </div>
+    <div class="bnav">
+      <div class="bnav-item on">
+        <svg class="bnav-icon" viewBox="0 0 24 24" fill="var(--blue)" stroke="none"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <div class="bnav-label">Utama</div>
+        <div class="bnav-dot"></div>
+      </div>
+      <div class="bnav-item">
+        <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <div class="bnav-label">Ria</div>
+      </div>
+      <div class="bnav-item" style="position:relative;padding-top:28px;">
+        <div class="fab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+        <div class="bnav-label" style="color:var(--gray-400);">Labur</div>
+      </div>
+      <div class="bnav-item">
+        <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <div class="bnav-label">Unit Amanah</div>
+      </div>
+      <div class="bnav-item">
+        <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        <div class="bnav-label">Prestasi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LAGI (Perkhidmatan) ═══ -->
+  <div class="screen" id="s-lagi">
+    <div class="sb" style="background:var(--blue);color:white;"><span>11:48</span>
+      <div class="sb-icons">
+        <svg width="15" height="11" viewBox="0 0 20 14" fill="white"><rect x="0" y="4" width="3" height="10" rx="1"/><rect x="4.5" y="2.5" width="3" height="11.5" rx="1"/><rect x="9" y="1" width="3" height="13" rx="1"/><rect x="13.5" y="0" width="3" height="14" rx="1" opacity=".3"/></svg>
+        <span>4G</span>
+        <svg width="22" height="12" viewBox="0 0 28 14" fill="none"><rect x=".5" y=".5" width="24" height="13" rx="3" stroke="white" stroke-opacity=".5"/><rect x="2" y="2" width="18" height="10" rx="2" fill="white"/><path d="M26 4.5v5a2.5 2.5 0 000-5z" fill="white" opacity=".4"/></svg>
+      </div>
+    </div>
+    <div class="scroll">
+      <div style="background:var(--blue);padding:0 16px 14px;">
+        <div class="promo-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+          <span>Dapatkan RM25 untuk Ria</span>
+        </div>
+      </div>
+
+
+      <div class="perkhid-title">Perkhidmatan</div>
+      <div class="services-grid">
+
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><rect x="7" y="15" width="42" height="40" rx="6" fill="#00AEEF"/><rect x="7" y="24" width="42" height="10" fill="#0088BB"/><rect x="13" y="37" width="7" height="6" rx="1.5" fill="white"/><rect x="23" y="37" width="7" height="6" rx="1.5" fill="white"/><rect x="33" y="37" width="7" height="6" rx="1.5" fill="white"/><rect x="13" y="46" width="7" height="6" rx="1.5" fill="white"/><rect x="23" y="46" width="7" height="6" rx="1.5" fill="white"/><circle cx="51" cy="17" r="12" fill="#F57C20"/><path d="M46 17a5 5 0 105 5" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M51 12v5l3 2" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="svc-label">Auto Labur</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><rect x="9" y="7" width="36" height="46" rx="5" fill="#00AEEF"/><rect x="15" y="16" width="24" height="3" rx="1.5" fill="white" opacity=".7"/><rect x="15" y="23" width="18" height="3" rx="1.5" fill="white" opacity=".5"/><circle cx="30" cy="42" r="10" fill="#F57C20"/><circle cx="38" cy="35" r="10" fill="#00AEEF" stroke="white" stroke-width="1.5"/></svg></div><div class="svc-label">Pelaburan Pihak Ketiga</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><path d="M35 9L58 22v10H12V22z" fill="#00AEEF"/><ellipse cx="35" cy="24" rx="11" ry="13" fill="#F57C20"/><ellipse cx="35" cy="24" rx="5.5" ry="6.5" fill="#00AEEF"/><circle cx="26" cy="38" r="9" fill="#F57C20"/><circle cx="44" cy="38" r="9" fill="#F57C20"/></svg></div><div class="svc-label">ASNB COVR</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><rect x="7" y="13" width="44" height="40" rx="6" fill="#00AEEF"/><circle cx="21" cy="21" r="9" fill="#F57C20"/><text x="17" y="26" font-size="11" font-weight="800" fill="white" font-family="sans-serif">RM</text><path d="M17 36h24M17 44h24" stroke="white" stroke-width="3" stroke-linecap="round"/><path d="M13 36l4-4M13 36l4 4" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M45 44l-4-4M45 44l-4 4" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="svc-label">Penukaran</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><rect x="18" y="7" width="28" height="34" rx="5" fill="#F57C20"/><rect x="22" y="11" width="20" height="22" rx="3" fill="#CC6010"/><path d="M35 41v17M27 52l8 8 8-8" stroke="#00AEEF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="svc-label">Pengeluaran</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><rect x="9" y="22" width="46" height="36" rx="6" fill="#F57C20"/><path d="M33 11c0-5.5 9-5.5 9 0s-9 11-9 11S24 16.5 24 11s9-5.5 9 0z" fill="#F57C20" stroke="white" stroke-width="1.5"/><path d="M24 22h16v10H24z" fill="#CC6010"/><circle cx="32" cy="43" r="7" fill="white"/><path d="M29 43a3 3 0 006 0" stroke="#F57C20" stroke-width="2" stroke-linecap="round"/></svg></div><div class="svc-label">Wakaf</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><circle cx="35" cy="35" r="24" fill="#00AEEF"/><circle cx="35" cy="35" r="16" fill="#0090CC"/><circle cx="35" cy="35" r="8" fill="#F57C20"/><circle cx="35" cy="35" r="3" fill="white"/><path d="M51 17l-9 9" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M51 17h-7M51 17v7" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg></div><div class="svc-label">Target Labur</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><path d="M12 42l22-30 22 30z" fill="#00AEEF"/><rect x="18" y="42" width="28" height="16" rx="2" fill="#0088BB"/><rect x="28" y="48" width="10" height="10" rx="1.5" fill="white"/><circle cx="49" cy="22" r="10" fill="#F57C20"/><text x="44" y="27" font-size="10" font-weight="800" fill="white" font-family="sans-serif">RM</text></svg></div><div class="svc-label">Zakat Khultah</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><path d="M13 44l21-30 21 30z" fill="#00AEEF"/><rect x="19" y="44" width="26" height="14" rx="2" fill="#0088BB"/><rect x="28" y="49" width="9" height="9" rx="1.5" fill="white"/><circle cx="50" cy="24" r="10" fill="#F57C20"/><text x="45" y="29" font-size="10" font-weight="800" fill="white" font-family="sans-serif">RM</text></svg></div><div class="svc-label">Zakat</div></div>
+
+        <div class="svc-item" onclick="show('s-hapa')"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><path d="M35 45L20 30a8 8 0 0111-11l4 4 4-4a8 8 0 1111 11L35 45z" fill="#00AEEF"/><rect x="10" y="10" width="50" height="50" rx="12" fill="#00AEEF"/><rect x="28" y="49" width="9" height="9" rx="1.5" fill="white"/><circle cx="50" cy="24" r="10" fill="#F57C20"/><text x="45" y="29" font-size="10" font-weight="800" fill="white" font-family="sans-serif">RM</text></svg></div><div class="svc-label">HAPA</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><rect x="9" y="28" width="20" height="34" rx="5" fill="#F57C20"/><rect x="23" y="20" width="22" height="42" rx="5" fill="#F57C20" opacity=".85"/><text x="6" y="27" font-size="17" font-weight="800" fill="#00AEEF" font-family="sans-serif">+</text><text x="46" y="52" font-size="17" font-weight="800" fill="#00AEEF" font-family="sans-serif">+</text></svg></div><div class="svc-label">ASB Plus</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><rect x="9" y="10" width="40" height="48" rx="5" fill="#00AEEF"/><rect x="15" y="18" width="28" height="4" rx="2" fill="white" opacity=".8"/><rect x="15" y="26" width="28" height="4" rx="2" fill="white" opacity=".65"/><rect x="15" y="34" width="28" height="4" rx="2" fill="white" opacity=".5"/><rect x="15" y="42" width="20" height="4" rx="2" fill="white" opacity=".35"/><circle cx="46" cy="18" r="11" fill="#F57C20"/><text x="41" y="23" font-size="10" font-weight="800" fill="white" font-family="sans-serif">RM</text></svg></div><div class="svc-label">Penyata Akaun</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><rect x="9" y="12" width="40" height="42" rx="5" fill="#00AEEF"/><path d="M19 29h20M19 38h20" stroke="white" stroke-width="3" stroke-linecap="round"/><path d="M14 29l4-4M14 29l4 4" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M44 38l-4-4M44 38l-4 4" stroke="white" stroke-width="2.5" stroke-linecap="round"/><circle cx="46" cy="16" r="11" fill="#F57C20"/><path d="M46 11v5l3 2" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg></div><div class="svc-label">Rekod Transaksi</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><circle cx="24" cy="22" r="11" fill="#00AEEF"/><circle cx="24" cy="22" r="7" fill="#0088BB"/><circle cx="42" cy="28" r="9" fill="#F57C20"/><circle cx="42" cy="28" r="5.5" fill="#CC6010"/><path d="M12 55c0-7 5.4-12 12-12s12 5 12 12" fill="#00AEEF"/><path d="M32 55c0-6 4.5-10 10-10s10 4 10 10" fill="#F57C20"/><rect x="10" y="34" width="9" height="5" rx="2" fill="#F57C20"/><text x="11" y="40" font-size="7" font-weight="800" fill="white" font-family="sans-serif">RM</text></svg></div><div class="svc-label">Bijak/Remaja</div></div>
+
+        <div class="svc-item"><div class="svc-icon"><svg width="64" height="64" viewBox="0 0 70 70" fill="none"><ellipse cx="35" cy="56" rx="16" ry="4" fill="#00AEEF" opacity=".25"/><path d="M35 12c-10 0-18 8-18 18 0 11 18 30 18 30s18-19 18-30c0-10-8-18-18-18z" fill="#00AEEF"/><circle cx="35" cy="30" r="8" fill="white"/><circle cx="35" cy="30" r="4.5" fill="#00AEEF"/></svg></div><div class="svc-label">Cari Cawangan</div></div>
+        
+
+      </div>
+      <div style="height:28px;"></div>
+    </div>
+    <div class="bnav">
+      <div class="bnav-item" onclick="show('s-utama')">
+        <svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <div class="bnav-label">Utama</div>
+      </div>
+      <div class="bnav-item"><svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><div class="bnav-label">Ria</div></div>
+      <div class="bnav-item" style="position:relative;padding-top:28px;"><div class="fab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="bnav-label" style="color:var(--gray-400);">Labur</div></div>
+      <div class="bnav-item"><svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg><div class="bnav-label">Unit Amanah</div></div>
+      <div class="bnav-item on"><svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><div class="bnav-label">Prestasi</div><div class="bnav-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════
+       SCREEN: HAPA MAIN DASHBOARD
+  ════════════════════════════ -->
+  <div class="screen" id="s-hapa">
+    <div class="sb" style="background:var(--blue);color:white;"><span>11:53</span>
+      <div class="sb-icons"><svg width="15" height="11" viewBox="0 0 20 14" fill="white"><rect x="0" y="4" width="3" height="10" rx="1"/><rect x="4.5" y="2.5" width="3" height="11.5" rx="1"/><rect x="9" y="1" width="3" height="13" rx="1"/><rect x="13.5" y="0" width="3" height="14" rx="1" opacity=".3"/></svg><span>4G</span><svg width="22" height="12" viewBox="0 0 28 14" fill="none"><rect x=".5" y=".5" width="24" height="13" rx="3" stroke="white" stroke-opacity=".5"/><rect x="2" y="2" width="18" height="10" rx="2" fill="white"/><path d="M26 4.5v5a2.5 2.5 0 000-5z" fill="white" opacity=".4"/></svg></div>
+    </div>
+    <div class="scroll">
+      <div class="hdr">
+        <div class="back-row" onclick="show('s-utama')">
+          <div class="back-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div>
+          <div class="back-lbl">Hibah Amanah (HAPA)</div>
+        </div>
+        <div class="hero-row">
+          <div class="hero-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div>
+          <div><div class="hero-title">Dashboard HAPA</div><div class="hero-sub">Hibah Amanah Portal ASNB</div></div>
+        </div>
+      </div>
+
+      <!-- ① STATUS RIBBON -->
+      <div id="status-ribbon-active" class="status-ribbon">
+        <div class="status-lhs">
+          <div class="status-circle" style="background:var(--green-l);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div><div class="status-lbl">Status HAPA</div><div class="status-val-ok">Aktif</div></div>
+        </div>
+        <div class="pill-ok">✓ Disahkan</div>
+      </div>
+
+      <!-- Toggle — swap to 'no hapa' state for demo -->
+      <div style="display:flex;gap:8px;margin:10px 16px 0;">
+        <button onclick="setHapaStatus(true)" id="btn-active" style="flex:1;height:30px;background:var(--green);color:white;border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);">✓ Ada HAPA</button>
+        <button onclick="setHapaStatus(false)" id="btn-none" style="flex:1;height:30px;background:var(--gray-100);color:var(--gray-600);border:none;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);">✗ Tiada HAPA</button>
+      </div>
+
+      <!-- ── STATE: NO HAPA ── -->
+      <div id="no-hapa-section" style="display:none;">
+        <div style="margin:14px 16px 0;">
+          <div style="background:linear-gradient(135deg,var(--blue),var(--blue-bright));border-radius:16px;padding:18px;text-align:center;cursor:pointer;" onclick="openLearnModal()">
+            <div style="font-size:32px;margin-bottom:8px;">🤲</div>
+            <div style="font-size:15px;font-weight:800;color:white;margin-bottom:5px;">Anda belum mendaftar HAPA</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:14px;line-height:1.5;">Hibah Amanah memastikan unit amanah anda dipindahkan kepada penerima pilihan anda dengan mudah.</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:white;color:var(--blue);padding:9px 20px;border-radius:30px;font-size:13px;font-weight:800;">Ketahui Lebih Lanjut →</div>
+          </div>
+        </div>
+        <div style="margin:12px 16px 0;">
+          <button onclick="show('s-prereg')" style="width:100%;height:46px;background:var(--blue);color:white;border:none;border-radius:14px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;">+ Daftar HAPA Sekarang</button>
+        </div>
+        <div style="height:20px;"></div>
+      </div>
+
+      <!-- ── STATE: HAS HAPA ── -->
+      <div id="has-hapa-section">
+
+        <!-- ② PERMOHONAN (pre-registration entry) -->
+        <div class="section-lbl" style="margin-top:6px;">② Permohonan HAPA</div>
+        <div class="action-row" onclick="show('s-prereg')">
+          <div class="action-row-icon" style="background:#EEF0FB;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div class="action-row-text">
+            <div class="action-row-title">Borang Pre-Pendaftaran</div>
+            <div class="action-row-sub">Isi & hantar permohonan HAPA baharu</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+        <div class="action-row" onclick="show('s-preregsummary')">
+          <div class="action-row-icon" style="background:#E6F7F1;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <div class="action-row-text">
+            <div class="action-row-title">Status Permohonan</div>
+            <div class="action-row-sub" style="color:var(--green);">Submitted — 14/05/2026</div>
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+
+        <!-- ③ HAPA DASHBOARD (locked with Face ID) -->
+        <div class="section-lbl">③ Butiran HAPA Saya</div>
+        <div class="locked-card" id="locked-card" onclick="enterHapaDetails()">
+          <div class="lock-icon-wrap">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          </div>
+          <div class="locked-title">Dikunci dengan Face ID</div>
+          <div class="locked-sub">Tekan untuk membuka butiran HAPA anda menggunakan pengesahan biometrik</div>
+          <button class="face-id-btn" onclick="openFaceID()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M9 9h.01M15 9h.01M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="12" cy="12" r="10"/></svg>
+            Buka dengan Face ID
+          </button>
+        </div>
+
+      </div><!-- /has-hapa-section -->
+    </div>
+    <div class="bnav">
+      <div class="bnav-item" onclick="show('s-utama')"><svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><div class="bnav-label">Utama</div></div>
+      <div class="bnav-item"><svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><div class="bnav-label">Ria</div></div>
+      <div class="bnav-item" style="position:relative;padding-top:28px;"><div class="fab"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="bnav-label" style="color:var(--gray-400);">Labur</div></div>
+      <div class="bnav-item on"><svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg><div class="bnav-label">HAPA</div><div class="bnav-dot"></div></div>
+      <div class="bnav-item"><svg class="bnav-icon" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><div class="bnav-label">Prestasi</div></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════
+       SCREEN: PRE-REGISTRATION FORM
+  ════════════════════════════ -->
+  <div class="screen" id="s-prereg">
+    <div class="sb" style="background:var(--blue);color:white;"><span>11:53</span>
+      <div class="sb-icons"><svg width="15" height="11" viewBox="0 0 20 14" fill="white"><rect x="0" y="4" width="3" height="10" rx="1"/><rect x="4.5" y="2.5" width="3" height="11.5" rx="1"/><rect x="9" y="1" width="3" height="13" rx="1"/><rect x="13.5" y="0" width="3" height="14" rx="1" opacity=".3"/></svg><span>4G</span></div>
+    </div>
+    <!-- mini header -->
+    <div style="background:var(--blue);padding:10px 18px 14px;flex-shrink:0;">
+      <div class="back-row" onclick="show('s-hapa')">
+        <div class="back-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="back-lbl">Pre-Pendaftaran HAPA</div>
+      </div>
+    </div>
+    <!-- steps bar -->
+    <div class="steps-bar" id="steps-bar">
+      <div class="step-dot active" id="sdot-1" onclick="goPanel(1)"><div class="step-circle-sm">1</div><div class="step-lbl-sm">Pemberi</div></div>
+      <div class="step-line" id="sline-1"></div>
+      <div class="step-dot todo" id="sdot-2" onclick="goPanel(2)"><div class="step-circle-sm">2</div><div class="step-lbl-sm">Penerima</div></div>
+      <div class="step-line" id="sline-2"></div>
+      <div class="step-dot todo" id="sdot-3" onclick="goPanel(3)"><div class="step-circle-sm">3</div><div class="step-lbl-sm">Agihan</div></div>
+      <div class="step-line" id="sline-3"></div>
+      <div class="step-dot todo" id="sdot-4" onclick="goPanel(4)"><div class="step-circle-sm">4</div><div class="step-lbl-sm">Akad PDF</div></div>
+      <div class="step-line" id="sline-4"></div>
+      <div class="step-dot todo" id="sdot-5" onclick="goPanel(5)"><div class="step-circle-sm">5</div><div class="step-lbl-sm">Dokumen</div></div>
+      <div class="step-line" id="sline-5"></div>
+      <div class="step-dot todo" id="sdot-6" onclick="goPanel(6)"><div class="step-circle-sm">6</div><div class="step-lbl-sm">Temujanji</div></div>
+    </div>
+
+    <!-- PANEL 1: Pemberi -->
+    <div class="panel active" id="panel-1">
+      <div class="form-scroll">
+        <div class="sec-card">
+          <div class="sec-head">MAKLUMAT PEMBERI HIBAH <span>▾</span></div>
+          <div class="sec-body">
+            <div style="background:#EEF0FB;border-radius:8px;padding:8px 10px;margin-bottom:12px;font-size:11px;color:var(--blue);">🔒 Maklumat diisi secara automatik daripada akaun anda.</div>
+            <div class="fgroup"><label class="flabel">No. IC</label><input class="finput" id="ph-ic" value="020202020202" disabled></div>
+            <div class="fgroup"><label class="flabel">No. Unit Holder ID</label><input class="finput" id="ph-uhid" value="000000000" disabled></div>
+            <div class="fgroup"><label class="flabel">Nama Penuh</label><input class="finput" id="ph-nama" value="John Doe" disabled></div>
+            <div class="fg2">
+              <div class="fgroup"><label class="flabel">Jantina</label><input class="finput" value="Lelaki" disabled></div>
+              <div class="fgroup"><label class="flabel">Agama</label><input class="finput" value="Islam" disabled></div>
+            </div>
+            <div class="fgroup"><label class="flabel">No. Telefon <span class="req">*</span></label><input class="finput" id="ph-tel" type="tel" placeholder="e.g. 0123456789"></div>
+            <div class="fgroup"><label class="flabel">E-mel</label><input class="finput" id="ph-email" type="email" placeholder="e.g. nama@email.com"></div>
+          </div>
+        </div>
+        <div class="sec-card">
+          <div class="sec-head">ALAMAT PEMBERI <span>▾</span></div>
+          <div class="sec-body">
+            <div class="fgroup"><label class="flabel">Alamat Baris 1 <span class="req">*</span></label><input class="finput" id="ph-addr1" placeholder="No. rumah, jalan"></div>
+            <div class="fgroup"><label class="flabel">Alamat Baris 2</label><input class="finput" id="ph-addr2" placeholder="Taman, kawasan"></div>
+            <div class="fg3">
+              <div class="fgroup"><label class="flabel">Poskod <span class="req">*</span></label><input class="finput" id="ph-poskod" placeholder="50480"></div>
+              <div class="fgroup"><label class="flabel">Bandar <span class="req">*</span></label><input class="finput" id="ph-bandar" placeholder="KL"></div>
+              <div class="fgroup"><label class="flabel">Negeri <span class="req">*</span></label>
+                <select class="fselect" id="ph-negeri"><option value="">Pilih</option><option>Johor</option><option>Kedah</option><option>Kelantan</option><option>Melaka</option><option>Negeri Sembilan</option><option>Pahang</option><option>Perak</option><option>Selangor</option><option>W.P. Kuala Lumpur</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer"><button class="btn-primary" onclick="nextPanel(1)">Simpan & Teruskan →</button></div>
+    </div>
+
+    <!-- PANEL 2: Penerima -->
+    <div class="panel" id="panel-2">
+      <div class="form-scroll">
+        <div class="sec-card">
+          <div class="sec-head">BILANGAN PENERIMA</div>
+          <div class="sec-body">
+            <label class="flabel">Bilangan Penerima</label>
+            <div class="count-row" style="margin-top:8px;">
+              <button class="count-btn" onclick="changeCount(-1)">−</button>
+              <span class="count-val" id="count-val">1</span>
+              <button class="count-btn" onclick="changeCount(1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div id="penerima-forms"></div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-sec" onclick="prevPanel(2)">←</button>
+        <button class="btn-primary" onclick="nextPanel(2)">Simpan & Teruskan →</button>
+      </div>
+    </div>
+
+    <!-- PANEL 3: Agihan -->
+    <div class="panel" id="panel-3">
+      <div class="form-scroll">
+        <div class="sec-card">
+          <div class="sec-head">PILIH TABUNG HIBAH</div>
+          <div class="sec-body">
+            <div class="fund-checks" id="fund-checks">
+              <label class="fund-check-lbl"><input type="checkbox" value="ASB" onchange="buildAllocTable()"> ASB</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASB2" onchange="buildAllocTable()"> ASB 2</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASM" onchange="buildAllocTable()"> ASM</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASM2" onchange="buildAllocTable()"> ASM 2 Wawasan</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASN" onchange="buildAllocTable()"> ASN</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASNEq2" onchange="buildAllocTable()"> ASN Equity 2</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASNEq3" onchange="buildAllocTable()"> ASN Equity 3</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASNSara1" onchange="buildAllocTable()"> ASN Sara 1</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASNImbang1" onchange="buildAllocTable()"> ASN Imbang 1</label>
+              <label class="fund-check-lbl"><input type="checkbox" value="ASNSukuk" onchange="buildAllocTable()"> ASN Sukuk</label>
+            </div>
+          </div>
+        </div>
+        <div class="sec-card" id="alloc-card" style="display:none;">
+          <div class="sec-head">PERATUSAN PENGAGIHAN (%)</div>
+          <div class="sec-body" style="padding:0;">
+            <div class="alloc-wrap" id="alloc-wrap"></div>
+            <div style="padding:10px 14px;background:#EEF0FB;font-size:11px;color:var(--blue);">ℹ️ Jumlah mestilah 100% bagi setiap penerima.</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-sec" onclick="prevPanel(3)">←</button>
+        <button class="btn-primary" onclick="nextPanel(3)">Simpan & Semak →</button>
+      </div>
+    </div>
+
+    <!-- PANEL 4: Akad PDF -->
+    <div class="panel" id="panel-4">
+      <div class="form-scroll">
+        <div style="background:#FFF8EC;border:1px solid rgba(245,124,32,0.3);border-radius:12px;padding:13px;margin-bottom:12px;font-size:12px;color:#7A4500;line-height:1.6;">
+          ⚠️ Sila semak semua maklumat dengan teliti sebelum menjana dokumen rasmi Akad/Lafaz.
+        </div>
+        <!-- Review: Pemberi -->
+        <div class="sec-card">
+          <div class="sec-head">Semak — Pemberi Hibah</div>
+          <div class="sec-body">
+            <div class="rv-box">
+              <div class="rv-row"><span class="rv-label">Nama</span><span class="rv-val" id="rv-nama">—</span></div>
+              <div class="rv-row"><span class="rv-label">No. IC</span><span class="rv-val" id="rv-ic">—</span></div>
+              <div class="rv-row"><span class="rv-label">Unit Holder ID</span><span class="rv-val" id="rv-uhid">—</span></div>
+              <div class="rv-row"><span class="rv-label">Telefon</span><span class="rv-val" id="rv-tel">—</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- Review: Penerima summary -->
+        <div class="sec-card">
+          <div class="sec-head">Semak — Penerima & Agihan</div>
+          <div class="sec-body" id="rv-penerima-body" style="font-size:12px;color:var(--gray-600);"></div>
+        </div>
+        <!-- Date + download -->
+        <div class="sec-card">
+          <div class="sec-head">Jana Akad / Lafaz PDF</div>
+          <div class="sec-body">
+            <div class="fgroup"><label class="flabel">Tarikh Tandatangan <span class="req">*</span></label><input class="finput" id="akad-tarikh" type="date"></div>
+            <button onclick="generateMobilePDF()" style="width:100%;height:44px;background:#00A86B;color:white;border:none;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Muat Turun Akad PDF
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-sec" onclick="prevPanel(4)">←</button>
+        <button class="btn-primary" onclick="nextPanel(4)">Teruskan →</button>
+      </div>
+    </div>
+
+    <!-- PANEL 5: Upload Dokumen -->
+    <div class="panel" id="panel-5">
+      <div class="form-scroll">
+        <div style="font-size:12px;color:var(--gray-600);margin-bottom:12px;line-height:1.6;">Muat naik salinan <strong>Kad Pengenalan (IC)</strong> bagi setiap individu yang terlibat (JPG, PNG, PDF maks. 5MB).</div>
+        <div class="sec-card">
+          <div class="sec-head">Muat Naik Dokumen IC</div>
+          <div class="sec-body" style="padding:8px 14px;" id="upload-rows">
+            <!-- built by JS -->
+          </div>
+        </div>
+        <div style="padding:10px;background:#FFF8EC;border-radius:10px;font-size:11px;color:#7A4500;margin-top:4px;">⚠️ Pastikan dokumen jelas dan maklumat penuh kelihatan.</div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-sec" onclick="prevPanel(5)">←</button>
+        <button class="btn-primary" onclick="nextPanel(5)">Teruskan ke Temujanji →</button>
+      </div>
+    </div>
+
+    <!-- PANEL 6: Temujanji -->
+    <div class="panel" id="panel-6">
+      <div class="form-scroll">
+        <div style="font-size:13px;font-weight:700;color:var(--gray-800);margin-bottom:12px;">Pilih cara penghantaran dokumen ke cawangan ASNB:</div>
+
+        <div class="appt-option selected" id="appt-walk" onclick="selectAppt('walk')">
+          <div class="appt-icon">🏦</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--gray-800);">Datang terus (Walk-in)</div>
+            <div style="font-size:11px;color:var(--gray-400);margin-top:2px;">Kunjungi cawangan ASNB terdekat tanpa temujanji.</div>
+          </div>
+        </div>
+
+        <div class="appt-option" id="appt-appt" onclick="selectAppt('appt')">
+          <div class="appt-icon">📅</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--gray-800);">Buat Temujanji</div>
+            <div style="font-size:11px;color:var(--gray-400);margin-top:2px;">Pilih cawangan, tarikh dan masa yang sesuai.</div>
+          </div>
+        </div>
+
+        <div id="appt-form" style="display:none;margin-top:4px;">
+          <div class="sec-card">
+            <div class="sec-head">Butiran Temujanji</div>
+            <div class="sec-body">
+              <div class="fgroup">
+                <label class="flabel">Cawangan ASNB <span class="req">*</span></label>
+                <select class="fselect" id="appt-branch">
+                  <option value="">— Pilih Cawangan —</option>
+                  <option>ASNB KL (Menara Yayasan Tun Razak)</option>
+                  <option>ASNB Petaling Jaya</option>
+                  <option>ASNB Johor Bahru</option>
+                  <option>ASNB Penang</option>
+                  <option>ASNB Kota Kinabalu</option>
+                  <option>ASNB Kuching</option>
+                </select>
+              </div>
+              <div class="fg2">
+                <div class="fgroup"><label class="flabel">Tarikh <span class="req">*</span></label><input class="finput" id="appt-date" type="date"></div>
+                <div class="fgroup"><label class="flabel">Masa <span class="req">*</span></label>
+                  <select class="fselect" id="appt-time">
+                    <option>09:00 AM</option><option>10:00 AM</option><option>11:00 AM</option>
+                    <option>02:00 PM</option><option>03:00 PM</option><option>04:00 PM</option>
+                  </select>
+                </div>
+              </div>
+              <div class="fgroup"><label class="flabel">Catatan</label><input class="finput" id="appt-notes" placeholder="Sebarang catatan (pilihan)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;background:var(--green-l);border-radius:12px;padding:13px;font-size:12px;color:#006B3C;line-height:1.6;">
+          ✅ Sila bawa dokumen asal IC semua individu yang terlibat ke cawangan. Permohonan anda akan disahkan dalam masa <strong>3-5 hari bekerja</strong>.
+        </div>
+      </div>
+      <div class="panel-footer">
+        <button class="btn-sec" onclick="prevPanel(6)">←</button>
+        <button class="btn-primary" onclick="submitApplication()">Hantar Permohonan ✅</button>
+      </div>
+    </div>
+  </div><!-- /s-prereg -->
+
+  <!-- ════════════════════════════
+       SCREEN: APPLICATION SUMMARY
+  ════════════════════════════ -->
+  <div class="screen" id="s-preregsummary">
+    <div class="sb" style="background:var(--blue);color:white;"><span>11:53</span></div>
+    <div style="background:var(--blue);padding:10px 18px 14px;flex-shrink:0;">
+      <div class="back-row" onclick="show('s-hapa')">
+        <div class="back-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div>
+        <div class="back-lbl">Status Permohonan</div>
+      </div>
+    </div>
+    <div class="scroll" style="padding:16px;">
+      <div style="background:var(--green-l);border-radius:14px;padding:18px;text-align:center;margin-bottom:16px;">
+        <div style="font-size:36px;margin-bottom:8px;">✅</div>
+        <div style="font-size:16px;font-weight:800;color:var(--green);margin-bottom:4px;">Permohonan Dihantar</div>
+        <div style="font-size:12px;color:var(--gray-600);">No. Rujukan: <strong>HA-2026-0142</strong></div>
+        <div style="font-size:11px;color:var(--gray-400);margin-top:4px;">Tarikh: 14/05/2026 10:10 AM</div>
+      </div>
+      <div style="background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gray-400);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px;">Butiran Permohonan</div>
+        <div class="rv-row"><span class="rv-label">Produk</span><span class="rv-val">Hibah Amanah</span></div>
+        <div class="rv-row"><span class="rv-label">Status</span><span style="font-size:12px;font-weight:700;color:var(--blue);">SUBMITTED</span></div>
+        <div class="rv-row"><span class="rv-label">Sah hingga</span><span class="rv-val">12/08/2026 (90 hari)</span></div>
+      </div>
+      <div style="background:#FFF8EC;border:1px solid rgba(245,124,32,0.25);border-radius:12px;padding:13px;font-size:12px;color:#7A4500;line-height:1.65;margin-bottom:16px;">
+        ⚠️ Permohonan ini belum sah sehingga dokumen lengkap diserahkan ke cawangan ASNB dalam tempoh 90 hari.
+      </div>
+      <button onclick="show('s-prereg')" style="width:100%;height:44px;background:var(--blue);color:white;border:none;border-radius:12px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px;">Kemaskini Permohonan</button>
+      <button onclick="show('s-hapa')" style="width:100%;height:40px;background:white;color:var(--gray-600);border:1.5px solid var(--gray-200);border-radius:12px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;">Kembali ke Dashboard</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════
+       SCREEN: ASB Detail
+  ════════════════════════════ -->
+  <div class="screen" id="s-hapa-asb">
+    <div class="sb" style="background:var(--blue);color:white;"><span>11:53</span></div>
+    <div class="scroll">
+      <div class="hdr">
+        <div class="back-row" onclick="show('s-hapa')"><div class="back-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div><div class="back-lbl">HAPA Dashboard</div></div>
+        <div style="margin-top:10px;"><div style="font-size:18px;font-weight:800;color:white;">Amanah Saham Bumiputera (Class A)</div><div style="font-size:12px;color:rgba(255,255,255,0.7);">Pengagihan Hibah</div></div>
+      </div>
+      <div style="padding:14px 16px 6px;">
+        <div style="background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="font-size:10px;font-weight:700;color:var(--gray-400);margin-bottom:6px;">JUMLAH DANA</div>
+          <div style="font-size:20px;font-weight:800;color:var(--gray-800);">RM 100,000.00</div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:2px;">Berdasarkan nilai semasa dana</div>
+        </div>
+      </div>
+      <div style="padding:6px 16px 16px;">
+        <div style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:10px;">Senarai Penerima</div>
+        <div style="background:white;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:13px;font-weight:700;">John Doe Junior</div><div style="font-size:12px;font-weight:700;color:var(--blue);">25%</div></div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:3px;">UHID: 000013273542</div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between;"><div style="font-size:11px;color:var(--gray-400);">Anggaran Nilai</div><div style="font-size:13px;font-weight:800;">RM 25,000</div></div>
+        </div>
+        <div style="background:white;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:13px;font-weight:700;">Jane Doe Junior</div><div style="font-size:12px;font-weight:700;color:var(--blue);">45%</div></div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:3px;">UHID: 000087654321</div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between;"><div style="font-size:11px;color:var(--gray-400);">Anggaran Nilai</div><div style="font-size:13px;font-weight:800;">RM 45,000</div></div>
+        </div>
+        <div style="background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="display:flex;justify-content:space-between;align-items:center;"><div style="font-size:13px;font-weight:700;">Albert Doe</div><div style="font-size:12px;font-weight:700;color:var(--blue);">30%</div></div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:3px;">Tiada UHID</div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between;"><div style="font-size:11px;color:var(--gray-400);">Anggaran Nilai</div><div style="font-size:13px;font-weight:800;">RM 30,000</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════
+       SCREEN: ASM Detail
+  ════════════════════════════ -->
+  <div class="screen" id="s-hapa-asm">
+    <div class="sb" style="background:var(--blue);color:white;"><span>11:53</span></div>
+    <div class="scroll">
+      <div class="hdr">
+        <div class="back-row" onclick="show('s-hapa')"><div class="back-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div><div class="back-lbl">HAPA Dashboard</div></div>
+        <div style="margin-top:10px;"><div style="font-size:18px;font-weight:800;color:white;">Amanah Saham Malaysia (Class A)</div><div style="font-size:12px;color:rgba(255,255,255,0.7);">Pengagihan Hibah</div></div>
+      </div>
+      <div style="padding:14px 16px 6px;">
+        <div style="background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="font-size:10px;font-weight:700;color:var(--gray-400);margin-bottom:6px;">JUMLAH DANA</div>
+          <div style="font-size:20px;font-weight:800;color:var(--gray-800);">RM 3,400.00</div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:2px;">Berdasarkan nilai semasa dana</div>
+        </div>
+      </div>
+      <div style="padding:6px 16px;"><div style="font-size:14px;font-weight:700;color:var(--gray-800);margin-bottom:10px;">Senarai Penerima</div>
+        <div style="background:white;border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="display:flex;justify-content:space-between;"><div style="font-size:13px;font-weight:700;">John Doe Junior</div><div style="font-size:12px;font-weight:700;color:var(--blue);">30%</div></div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:3px;">UHID: 000013273542</div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between;"><div style="font-size:11px;color:var(--gray-400);">Anggaran Nilai</div><div style="font-size:13px;font-weight:800;">RM 1,020</div></div>
+        </div>
+        <div style="background:white;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+          <div style="display:flex;justify-content:space-between;"><div style="font-size:13px;font-weight:700;">Jane Doe Junior</div><div style="font-size:12px;font-weight:700;color:var(--blue);">70%</div></div>
+          <div style="font-size:11px;color:var(--gray-400);margin-top:3px;">UHID: 000087654321</div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between;"><div style="font-size:11px;color:var(--gray-400);">Anggaran Nilai</div><div style="font-size:13px;font-weight:800;">RM 2,380</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+ <div class="screen" id="s-hapa-details">
+
+   <div class="sb" style="background:var(--blue);color:white;">
+     <span>11:53</span>
+   </div>
+
+   <div class="scroll">
+     <div class="hdr">
+       <div class="back-row" onclick="show('s-hapa')">
+         <div class="back-btn">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+             <path d="M15 18l-6-6 6-6"/>
+           </svg>
+         </div>
+         <div class="back-lbl">HAPA Dashboard</div>
+       </div>
+
+       <div style="margin-top:10px;">
+         <div class="hero-title">Butiran HAPA Saya</div>
+         <div class="hero-sub">Maklumat terperinci hibah</div>
+       </div>
+     </div>
+
+     <div style="padding:16px;">
+       <!-- ③ HAPA DASHBOARD (unlocked — hidden until auth) -->
+        <div class="stat-grid">
+          <div class="hstat"><div class="hstat-lbl">Dana Diliputi</div><div class="hstat-val">2</div><div class="hstat-sub">Dana hibah aktif</div></div>
+          <div class="hstat"><div class="hstat-lbl">Anggaran Nilai</div><div class="hstat-val" style="font-size:14px;">RM 103,400</div><div class="hstat-sub">Jumlah hibah</div></div>
+          <div class="hstat"><div class="hstat-lbl">Penerima</div><div class="hstat-val">3</div><div class="hstat-sub">Individu</div></div>
+          <div class="hstat"><div class="hstat-lbl">Tarikh Sah</div><div class="hstat-val" style="font-size:13px;">12 Jan 2024</div><div class="hstat-sub">Kemaskini terkini</div></div>
+        </div>
+        <div class="info-notice">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CC6500" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="info-notice-text">HAPA ialah pemberian amanah. Unit akan dipindahkan kepada penerima apabila pemberi meninggal, tertakluk kepada terma dan syarat ASNB.</div>
+        </div>
+
+        <div class="section-lbl">Butiran Pemberian Hibah</div>
+        <div style="padding:0 16px;display:flex;flex-direction:column;gap:10px;">
+          <div class="hfc" onclick="show('s-hapa-asb')" style="cursor:pointer;">
+
+           <!-- ✅ THIS wrapper is IMPORTANT -->
+           <div class="hfc-top">
+
+             <div class="hfc-dot"><img src="asb.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:11px;"></div><div>
+             <div class="hfc-name">Amanah Saham Bumiputera (Class A)</div>
+             <div class="hfc-sub">Dana harga tetap · RM1.00/unit</div>
+           </div>
+         </div>
+         <div class="hfc-line"></div>
+
+         <div class="hfc-row">
+           <div class="hfc-rl">Unit Terkini</div>
+           <div class="hfc-rv hl">100,000.00 unit</div>
+         </div>
+
+         <div class="hfc-row">
+            <div class="hfc-rl">Status hibah</div>
+           <div class="hfc-rv gr">Aktif</div>
+         </div>
+
+         </div>
+          <div class="hfc" onclick="show('s-hapa-asm')" style="cursor:pointer;">
+             <!-- ✅ THIS wrapper is IMPORTANT -->
+           <div class="hfc-top">
+
+             <div class="hfc-dot"><img src="asm.jpg" style="width:100%;height:100%;object-fit:cover;border-radius:11px;"></div><div>
+             <div class="hfc-name">Amanah Saham Malaysia (Class A)</div>
+             <div class="hfc-sub">Dana harga tetap · RM1.00/unit</div>
+           </div>
+         </div>
+         <div class="hfc-line"></div>
+
+         <div class="hfc-row">
+           <div class="hfc-rl">Unit Terkini</div>
+           <div class="hfc-rv hl">100,000.00 unit</div>
+         </div>
+
+         <div class="hfc-row">
+            <div class="hfc-rl">Status hibah</div>
+           <div class="hfc-rv gr">Aktif</div>
+         </div>
+
+         </div>
+        </div>
+
+        <div class="section-lbl">Butiran Penerimaan Hibah</div>
+        <div style="padding:0 16px;display:flex;flex-direction:column;gap:10px;margin-bottom:8px;">
+          <div class="hfc">
+            <div class="hfc-top"><div class="hfc-dot" style="background:#00AEEF;">1</div><div><div class="hfc-name">John Doe Junior</div><div class="hfc-sub">Tarikh Sah: 30 Jan 2022</div></div></div>
+            <div class="hfc-line"></div>
+            <div class="hfc-row"><div class="hfc-rl">Amanah Saham Bumiputera</div><div class="hfc-rv hl">25%</div></div>
+            <div class="hfc-row"><div class="hfc-rl">Amanah Saham Malaysia</div><div class="hfc-rv hl">30%</div></div>
+          </div>
+          <div class="hfc">
+            <div class="hfc-top"><div class="hfc-dot" style="background:var(--orange);">2</div><div><div class="hfc-name">Jane Doe Junior</div><div class="hfc-sub">Tarikh Sah: 30 Jan 2022</div></div></div>
+            <div class="hfc-line"></div>
+            <div class="hfc-row"><div class="hfc-rl">Amanah Saham Bumiputera</div><div class="hfc-rv hl">45%</div></div>
+            <div class="hfc-row"><div class="hfc-rl">Amanah Saham Malaysia</div><div class="hfc-rv hl">70%</div></div>
+          </div>
+        </div>
+
+        <div style="margin:0 16px 8px;background:white;border-radius:13px;padding:13px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+          <div style="font-size:10px;color:var(--gray-400);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px;">Hubungi Kami</div>
+          <div style="font-size:12px;color:var(--gray-600);line-height:1.6;">📞 <strong style="color:var(--blue);">03-2092 6400</strong> atau layari cawangan ASNB berhampiran.</div>
+        </div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div><!-- /frame -->
+
+<script>
+const {jsPDF} = window.jspdf;
+let hapaUnlocked = false;
+
+/* ══════════════════════════════════════════
+   SCREEN NAVIGATION
+══════════════════════════════════════════ */
+function show(id){
+
+  // ✅ Block access to HAPA if not unlocked
+  if(id === 's-hibah' && !hapaUnlocked){
+    showFaceID(); // trigger Face ID instead
+    return;
+  }
+
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+
+  // ✅ Reset Face ID when leaving HAPA
+  if(id !== 's-hapa-details'){
+    hapaUnlocked = false;
+  }
+}
+
+function showFaceID(){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-faceid').classList.add('active');
+}
+
+/* ══════════════════════════════════════════
+   HAPA STATUS TOGGLE (demo)
+══════════════════════════════════════════ */
+function setHapaStatus(active){
+  document.getElementById('no-hapa-section').style.display = active ? 'none' : 'block';
+  document.getElementById('has-hapa-section').style.display = active ? 'block' : 'none';
+  document.getElementById('status-ribbon-active').style.display = 'flex';
+  if(active){
+    document.getElementById('status-ribbon-active').innerHTML = `
+      <div class="status-lhs">
+        <div class="status-circle" style="background:var(--green-l);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div><div class="status-lbl">Status HAPA</div><div class="status-val-ok">Aktif</div></div>
+      </div>
+      <div class="pill-ok">✓ Disahkan</div>`;
+    document.getElementById('btn-active').style.background='#00A86B';
+    document.getElementById('btn-active').style.color='white';
+    document.getElementById('btn-none').style.background='var(--gray-100)';
+    document.getElementById('btn-none').style.color='var(--gray-600)';
+  } else {
+    document.getElementById('status-ribbon-active').innerHTML = `
+      <div class="status-lhs">
+        <div class="status-circle" style="background:#FFF3E0;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <div><div class="status-lbl">Status HAPA</div><div class="status-val-no">Tidak Aktif</div></div>
+      </div>
+      <div class="pill-no">Belum Daftar</div>`;
+    document.getElementById('btn-none').style.background='var(--orange)';
+    document.getElementById('btn-none').style.color='white';
+    document.getElementById('btn-active').style.background='var(--gray-100)';
+    document.getElementById('btn-active').style.color='var(--gray-600)';
+  }
+}
+
+/* ══════════════════════════════════════════
+   MODALS
+══════════════════════════════════════════ */
+function openLearnModal(){ document.getElementById('learnModal').classList.add('open'); }
+function closeLearnModal(){ document.getElementById('learnModal').classList.remove('open'); }
+document.getElementById('learnModal').addEventListener('click', e=>{ if(e.target===e.currentTarget) closeLearnModal(); });
+
+/* ══════════════════════════════════════════
+   FACE ID
+══════════════════════════════════════════ */
+function openFaceID(){ document.getElementById('faceid-overlay').classList.add('open'); }
+function closeFaceID(){ document.getElementById('faceid-overlay').classList.remove('open'); }
+
+function startFaceID(){
+  const ring = document.getElementById('faceid-ring');
+  const msg  = document.getElementById('faceid-msg');
+  const btn  = document.getElementById('faceid-btn');
+  const icon = document.getElementById('faceIcon');
+  btn.disabled = true;
+  btn.textContent = 'Mengimbas…';
+  ring.classList.add('scanning');
+  msg.textContent = 'Mengesan wajah anda…';
+  setTimeout(()=>{
+    ring.classList.remove('scanning');
+    ring.classList.add('done');
+    icon.setAttribute('stroke','var(--green)');
+    msg.textContent = '✅ Pengesahan berjaya!';
+    btn.style.background='var(--green)';
+    btn.textContent='Berjaya!';
+    setTimeout(()=>{
+      closeFaceID();
+      
+      hapaUnlocked = true;        // ✅ ADD THIS
+      show('s-hapa-details');
+
+      // Reset ring for next use
+      ring.classList.remove('done');
+      icon.setAttribute('stroke','var(--blue)');
+      btn.disabled=false; btn.textContent='🪪 Imbas Face ID'; btn.style.background='var(--blue)';
+      msg.textContent='Tekan butang di bawah untuk mengimbas wajah';
+    }, 900);
+  }, 2200);
+}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+let toastT;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ══════════════════════════════════════════
+   PRE-REGISTRATION PANELS
+══════════════════════════════════════════ */
+let currentPanel=1;
+const TOTAL_PANELS=6;
+
+function goPanel(n){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+n)?.classList.add('active');
+  // update steps
+  for(let i=1;i<=TOTAL_PANELS;i++){
+    const dot=document.getElementById('sdot-'+i);
+    const line=document.getElementById('sline-'+i);
+    if(!dot) continue;
+    dot.className='step-dot '+(i<n?'done':i===n?'active':'todo');
+    if(line) line.className='step-line '+(i<n?'done':'');
+  }
+  currentPanel=n;
+  if(n===4) buildReview();
+  if(n===5) buildUploadRows();
+}
+function nextPanel(n){ goPanel(Math.min(n+1, TOTAL_PANELS)); }
+function prevPanel(n){ goPanel(Math.max(n-1,1)); }
+
+/* ══════════════════════════════════════════
+   PENERIMA COUNT & FORMS
+══════════════════════════════════════════ */
+let penerimaCount=1;
+function changeCount(d){
+  penerimaCount=Math.max(1,Math.min(10,penerimaCount+d));
+  document.getElementById('count-val').textContent=penerimaCount;
+  buildPenerimaForms();
+}
+
+function enterHapaDetails(){
+  if(!hapaUnlocked){
+    openFaceID(); // show face id modal
+  } else {
+    show('s-hapa-details');
+  }
+}
+
+function buildPenerimaForms(){
+  const c=document.getElementById('penerima-forms');
+  c.innerHTML='';
+  for(let i=1;i<=penerimaCount;i++){
+    c.innerHTML+=`
+    <div class="sec-card">
+      <div class="sec-head">Penerima ${i} <span>▾</span></div>
+      <div class="sec-body">
+        <div class="fgroup">
+          <label class="flabel">Status</label>
+          <div class="radio-row">
+            <label class="radio-lbl"><input type="radio" name="pr${i}status" value="dewasa" checked onchange="togglePj(${i})"> Dewasa</label>
+            <label class="radio-lbl"><input type="radio" name="pr${i}status" value="penjaga" onchange="togglePj(${i})"> Perlukan Penjaga</label>
+          </div>
+        </div>
+        <div class="fg2">
+          <div class="fgroup"><label class="flabel">No. IC <span class="req">*</span></label><input class="finput" id="pr${i}-ic" oninput="autoIC('pr${i}')" placeholder="901231045678"></div>
+          <div class="fgroup"><label class="flabel">Nama <span class="req">*</span></label><input class="finput" id="pr${i}-nama" placeholder="Nama penuh"></div>
+        </div>
+        <div class="fg2">
+          <div class="fgroup"><label class="flabel">Jantina</label><select class="fselect" id="pr${i}-jantina"><option>Lelaki</option><option>Perempuan</option></select></div>
+          <div class="fgroup"><label class="flabel">Hubungan</label><input class="finput" id="pr${i}-hubungan" placeholder="e.g. Anak"></div>
+        </div>
+        <!-- Penjaga section -->
+        <div id="pj${i}-section" style="display:none;border-top:1px solid var(--gray-100);padding-top:10px;margin-top:6px;">
+          <div style="font-size:11px;font-weight:700;color:var(--orange);margin-bottom:8px;">MAKLUMAT PENJAGA SAH</div>
+          <div class="fg2">
+            <div class="fgroup"><label class="flabel">No. IC Penjaga</label><input class="finput" id="pj${i}-ic" placeholder="IC Penjaga"></div>
+            <div class="fgroup"><label class="flabel">Nama Penjaga</label><input class="finput" id="pj${i}-nama" placeholder="Nama Penjaga"></div>
+          </div>
+          <div class="fgroup"><label class="flabel">Hubungan dgn Penerima</label><input class="finput" id="pj${i}-hubungan" placeholder="e.g. Ibu"></div>
+        </div>
+        <!-- Saksi -->
+        <div style="border-top:1px solid var(--gray-100);padding-top:10px;margin-top:6px;">
+          <div class="fgroup">
+            <label class="flabel">Maklumat Saksi</label>
+            <div class="radio-row">
+              <label class="radio-lbl"><input type="radio" name="saksi${i}" value="manual" checked onchange="toggleSaksi(${i})"> Tulis Tangan</label>
+              <label class="radio-lbl"><input type="radio" name="saksi${i}" value="form" onchange="toggleSaksi(${i})"> Dalam Sistem</label>
+            </div>
+          </div>
+          <div id="saksi${i}-form" style="display:none;">
+            <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;">SAKSI 1</div>
+            <div class="fg2">
+              <div class="fgroup"><label class="flabel">Nama</label><input class="finput" id="sx1-${i}-nama"></div>
+              <div class="fgroup"><label class="flabel">No. IC</label><input class="finput" id="sx1-${i}-ic"></div>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:6px;margin-top:6px;">SAKSI 2</div>
+            <div class="fg2">
+              <div class="fgroup"><label class="flabel">Nama</label><input class="finput" id="sx2-${i}-nama"></div>
+              <div class="fgroup"><label class="flabel">No. IC</label><input class="finput" id="sx2-${i}-ic"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+}
+
+function togglePj(i){
+  const v=document.querySelector(`input[name="pr${i}status"]:checked`)?.value;
+  document.getElementById(`pj${i}-section`).style.display=v==='penjaga'?'block':'none';
+}
+function toggleSaksi(i){
+  const v=document.querySelector(`input[name="saksi${i}"]:checked`)?.value;
+  document.getElementById(`saksi${i}-form`).style.display=v==='form'?'block':'none';
+}
+function autoIC(prefix){
+  const ic=document.getElementById(prefix+'-ic')?.value||'';
+  if(ic.length>=12){
+    const yy=ic.substring(0,2),mm=ic.substring(2,4),dd=ic.substring(4,6);
+    const yr=parseInt(yy)>30?'19'+yy:'20'+yy;
+    const jantina=document.getElementById(prefix+'-jantina');
+    if(jantina) jantina.value=parseInt(ic.slice(-1))%2===0?'Perempuan':'Lelaki';
+  }
+}
+
+/* ══════════════════════════════════════════
+   FUND ALLOCATION TABLE
+══════════════════════════════════════════ */
+function buildAllocTable(){
+  const funds=[...document.querySelectorAll('#fund-checks input:checked')].map(cb=>cb.value);
+  const card=document.getElementById('alloc-card');
+  const wrap=document.getElementById('alloc-wrap');
+  if(funds.length===0){card.style.display='none';return;}
+  card.style.display='block';
+  let html=`<table class="alloc-table"><thead><tr><th>Penerima</th>`;
+  funds.forEach(f=>html+=`<th>${f}</th>`);
+  html+=`</tr></thead><tbody>`;
+  for(let i=1;i<=penerimaCount;i++){
+    const nm=document.getElementById(`pr${i}-nama`)?.value||`Penerima ${i}`;
+    html+=`<tr><td>${nm}</td>`;
+    funds.forEach(f=>html+=`<td><input class="alloc-input" data-row="${i}" data-fund="${f}" placeholder="0" type="number" min="0" max="100"></td>`);
+    html+=`</tr>`;
+  }
+  html+=`</tbody></table>`;
+  wrap.innerHTML=html;
+}
+
+/* ══════════════════════════════════════════
+   REVIEW
+══════════════════════════════════════════ */
+function buildReview(){
+  const g=id=>document.getElementById(id)?.value||'—';
+  document.getElementById('rv-nama').textContent=g('ph-nama');
+  document.getElementById('rv-ic').textContent=g('ph-ic');
+  document.getElementById('rv-uhid').textContent=g('ph-uhid');
+  document.getElementById('rv-tel').textContent=g('ph-tel');
+  let html='';
+  for(let i=1;i<=penerimaCount;i++){
+    const nm=g(`pr${i}-nama`), ic=g(`pr${i}-ic`), hub=g(`pr${i}-hubungan`);
+    html+=`<div class="rv-box"><div class="rv-row"><b>Penerima ${i}</b></div>`;
+    html+=`<div class="rv-row"><span class="rv-label">Nama</span><span class="rv-val">${nm}</span></div>`;
+    html+=`<div class="rv-row"><span class="rv-label">No. IC</span><span class="rv-val">${ic}</span></div>`;
+    html+=`<div class="rv-row"><span class="rv-label">Hubungan</span><span class="rv-val">${hub}</span></div>`;
+    // ✅ PENJAGA (if exists)
+    const status = document.querySelector(`input[name="pr${i}status"]:checked`)?.value;
+
+   if(status === 'penjaga'){
+     const pjNama = document.getElementById(`pj${i}-nama`)?.value || '-';
+     const pjIC = document.getElementById(`pj${i}-ic`)?.value || '-';
+     const pjHub = document.getElementById(`pj${i}-hubungan`)?.value || '-';
+
+     html += `
+     <div class="rv-row">
+       <span class="rv-label">Penjaga</span>
+       <span class="rv-val">${pjNama}</span>
+     </div>
+     <div class="rv-row">
+       <span class="rv-label">IC Penjaga</span>
+       <span class="rv-val">${pjIC}</span>
+     </div>
+     <div class="rv-row">
+       <span class="rv-label">Hubungan Penjaga</span>
+       <span class="rv-val">${pjHub}</span>
+     </div>`;
+   }
+   // ✅ SAKSI (if filled in system)
+   const saksiMode = document.querySelector(`input[name="saksi${i}"]:checked`)?.value;
+
+   if(saksiMode === 'form'){
+     const sx1Nama = document.getElementById(`sx1-${i}-nama`)?.value || '-';
+     const sx1IC = document.getElementById(`sx1-${i}-ic`)?.value || '-';
+
+     const sx2Nama = document.getElementById(`sx2-${i}-nama`)?.value || '-';
+     const sx2IC = document.getElementById(`sx2-${i}-ic`)?.value || '-';
+
+     html += `
+     <div class="rv-row"><b>Saksi 1</b></div>
+     <div class="rv-row">
+       <span class="rv-label">Nama</span>
+       <span class="rv-val">${sx1Nama}</span>
+     </div>
+     <div class="rv-row">
+       <span class="rv-label">IC</span>
+       <span class="rv-val">${sx1IC}</span>
+     </div>
+
+     <div class="rv-row"><b>Saksi 2</b></div>
+     <div class="rv-row">
+       <span class="rv-label">Nama</span>
+       <span class="rv-val">${sx2Nama}</span>
+     </div>
+     <div class="rv-row">
+       <span class="rv-label">IC</span>
+       <span class="rv-val">${sx2IC}</span>
+     </div>`;
+   }
+    // allocation
+    const funds=[...document.querySelectorAll('#fund-checks input:checked')].map(cb=>cb.value);
+    funds.forEach(f=>{
+      const v=document.querySelector(`[data-row="${i}"][data-fund="${f}"]`)?.value||'0';
+      html+=`<div class="rv-row"><span class="rv-label">${f}</span><span class="rv-val">${v}%</span></div>`;
+    });
+    html+=`</div>`;
+  }
+  document.getElementById('rv-penerima-body').innerHTML=html||'<div style="color:var(--gray-400);font-size:12px;">Tiada penerima diisi.</div>';
+}
+
+/* ══════════════════════════════════════════
+   UPLOAD ROWS
+══════════════════════════════════════════ */
+function buildUploadRows(){
+  const c=document.getElementById('upload-rows');
+  c.innerHTML='';
+  const addRow=(label,role,id)=>{
+    c.innerHTML+=`
+    <div class="upload-row">
+      <div><div class="upload-lbl">${label}</div><div class="upload-role">${role}</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end; min-width:90px;">
+        <label class="upload-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Muat Naik
+          <input type="file" accept="image/*,application/pdf" onchange="markUploaded('${id}')">
+        </label>
+        <div class="upload-status" id="us-${id}">Belum muat naik</div>
+      </div>
+    </div>`;
+  };
+  const phNama=document.getElementById('ph-nama')?.value||'Pemberi Hibah';
+  addRow(phNama,'Pemberi Hibah','ph');
+  for(let i=1;i<=penerimaCount;i++){
+    const nm=document.getElementById(`pr${i}-nama`)?.value||`Penerima ${i}`;
+    addRow(nm,`Penerima ${i}`,`pr${i}`);
+    const isPj=document.querySelector(`input[name="pr${i}status"]:checked`)?.value==='penjaga';
+    if(isPj){
+      const pjNm=document.getElementById(`pj${i}-nama`)?.value||`Penjaga ${i}`;
+      addRow(pjNm,`Penjaga ${i}`,`pj${i}`);
+    }
+   
+   // ✅ ALWAYS include saksi for each penerima
+   const saksiMode = document.querySelector(`input[name="saksi${i}"]:checked`)?.value;
+
+   // ✅ Create upload row WITH optional manual input
+   const addSaksiRow = (label, role, id, allowInput) => {
+     c.innerHTML += `
+     <div class="upload-row">
+       <div style="flex:1; min-width:0;">
+         <div class="upload-lbl">${role}</div>
+      
+         ${allowInput ? `
+           <input class="finput" 
+               id="manual-${id}" 
+               placeholder="Masukkan nama saksi"
+               style="margin-top:6px;height:36px;font-size:12px;">
+         ` : `
+           <div class="upload-role">${label}</div>
+         `}
+       </div>
+
+       <div style="display:flex;flex-direction:column;align-items:flex-end; min-width:90px;">
+         <label class="upload-btn">
+           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+           Muat Naik
+           <input type="file" 
+               accept="image/*,application/pdf" 
+               onchange="markUploaded('${id}')">
+         </label>
+         <div class="upload-status" id="us-${id}">
+           Belum muat naik
+         </div>
+       </div>
+     </div>`;
+   };
+
+
+   // ✅ Determine names
+   let sx1Name, sx2Name;
+
+   if(saksiMode === 'form'){
+     sx1Name = document.getElementById(`sx1-${i}-nama`)?.value || '';
+     sx2Name = document.getElementById(`sx2-${i}-nama`)?.value || '';
+   }
+
+   // ✅ Add rows
+   addSaksiRow(
+     sx1Name,
+     `Saksi 1 — Penerima ${i}`,
+     `sx1-${i}`,
+     saksiMode !== 'form'   // ✅ SHOW INPUT if manual
+   );
+
+   addSaksiRow(
+     sx2Name,
+     `Saksi 2 — Penerima ${i}`,
+     `sx2-${i}`,
+     saksiMode !== 'form'
+   );
+  }
+}
+
+function markUploaded(id){
+  const el=document.getElementById('us-'+id);
+  if(el){el.textContent='✅ Dimuat naik';el.classList.add('ok');}
+}
+
+/* ══════════════════════════════════════════
+   APPOINTMENT
+══════════════════════════════════════════ */
+function selectAppt(type){
+  document.getElementById('appt-walk').className='appt-option'+(type==='walk'?' selected':'');
+  document.getElementById('appt-appt').className='appt-option'+(type==='appt'?' selected':'');
+  document.getElementById('appt-form').style.display=type==='appt'?'block':'none';
+}
+
+/* ══════════════════════════════════════════
+   SUBMIT
+══════════════════════════════════════════ */
+function submitApplication(){
+  showToast('✅ Permohonan berjaya dihantar!');
+  setTimeout(()=>show('s-preregsummary'),600);
+}
+
+/* ══════════════════════════════════════════
+   PDF GENERATION (same akad template)
+══════════════════════════════════════════ */
+function generateMobilePDF(){
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const phNama=document.getElementById('ph-nama')?.value||'-';
+  const phIC=document.getElementById('ph-ic')?.value||'-';
+  const globalTarikh=document.getElementById('akad-tarikh')?.value||'';
+  const funds=[...document.querySelectorAll('#fund-checks input:checked')].map(cb=>cb.value);
+
+  const W=210,ml=10,mr=10,cw=W-ml-mr;
+  const fontN='helvetica';
+  const setFont=(style='normal',sz=7)=>{doc.setFont(fontN,style);doc.setFontSize(sz);};
+  const txt=(t,x,y,o={})=>doc.text(t,x,y,o);
+  const ln=(x1,y1,x2,y2)=>doc.line(x1,y1,x2,y2);
+  const fillR=(x,y,w,h,r,g,b)=>{doc.setFillColor(r,g,b);doc.rect(x,y,w,h,'F');};
+  const rec=(x,y,w,h)=>doc.rect(x,y,w,h,'S');
+
+  // Build penerima list
+  let plist=[];
+  for(let i=1;i<=penerimaCount;i++){
+    plist.push({
+      nama:document.getElementById(`pr${i}-nama`)?.value||'-',
+      ic:document.getElementById(`pr${i}-ic`)?.value||'-',
+      jenis:document.querySelector(`input[name="pr${i}status"]:checked`)?.value||'dewasa',
+      saksiMode:document.querySelector(`input[name="saksi${i}"]:checked`)?.value||'manual'
+    });
+  }
+
+  plist.forEach((pr,index)=>{
+    if(index>0) doc.addPage();
+    let y=12;
+
+    // Title
+    fillR(ml,y,cw,6,20,40,160);
+    setFont('bold',9); doc.setTextColor(255,255,255);
+    txt('AKAD/LAFAZ PEMBERIAN DAN PENERIMAAN HARTA HIBAH',W/2,y+5.5,{align:'center'});
+    txt('BAGI PENERIMA HIBAH DEWASA / PENJAGA SAH DAN PELANTIKAN PEMEGANG AMANAH GANTIAN',W/2,y+10.5,{align:'center'});
+    y+=7;
+
+    doc.setTextColor(0,0,0);
+    fillR(ml,y,cw,6,230,235,250);
+    setFont('bold',8.5);
+    txt('1.0  LAFAZ PEMBERIAN HARTA HIBAH KEPADA PENERIMA HIBAH DAN PELANTIKAN PEMEGANG AMANAH GANTIAN',ml+2,y+4.5);
+    y+=8;
+
+    const clauses=[
+      ['a)','Saya seperti nama di bawah dengan suci hati tanpa paksaan mana-mana pihak, bersetuju menghibahkan Harta Hibah sepertimana yang dinyatakan di dalam Jadual Harta Hibah di bawah termasuk segala faedah yang terhasil daripada Harta Hibah tersebut (jika ada) kepada Penerima Hibah.'],
+      ['b)','Mulai tarikh ini Penerima Hibah adalah pemilik Harta Hibah yang dinyatakan tertakluk kepada terma dan syarat di dalam Surat Ikatan Hibah Amanah.'],
+      ['c)','Pengisytiharan Hibah Amanah ini adalah pengisytiharan terakhir dan terkini, mana-mana pengisytiharan yang dibuat terdahulu (termasuk hibah/wasiat/instrumen pewarisan lain) daripada Hibah Amanah ini adalah terbatal dan tidak diterima oleh pihak ASNB.'],
+      ['d)','Sekiranya Penerima Hibah meninggal dunia terlebih dahulu daripada saya, maka Harta Hibah akan dikembalikan kepada saya.'],
+      ['e)','Sekiranya Penerima Hibah meninggal dunia sebelum Harta Hibah diagihkan kepadanya, seorang wasi/pentadbir yang dilantik di bawah kuat kuasa undang-undang hendaklah hadir ke ASNB.'],
+      ['f)','Saya melantik ASNB sebagai Pemegang Amanah Gantian untuk mentadbir Harta Hibah selepas kematian saya.'],
+      ['g)','Saya bersetuju untuk mengganti rugi ASNB terhadap apa-apa hal yang berbangkit berhubung dengan pembentukan Hibah Amanah ini.'],
+      ['h)','Saya mengaku bahawa saya telah melengkapkan maklumat Penerima Hibah, tabung unit amanah dan peratusan pembahagian semasa Akad ini ditandatangani.'],
+      ['i)','Sekiranya terdapat perbezaan maklumat, maklumat yang dikemaskini di sistem ASNB adalah muktamad.'],
+      ['j)','Saya faham bahawa pindaan ke atas maklumat pemberian Harta Hibah serta pembatalan boleh dilaksanakan bila-bila masa dan tertakluk kepada prosedur semasa ASNB.'],
+    ];
+    setFont('normal',7); doc.setTextColor(30,30,30); doc.setLineHeightFactor(1.05);
+    for(const [lbl,t] of clauses){
+      const lines=doc.splitTextToSize(t,cw-10);
+      txt(lbl,ml+1,y+3.5); txt(lines,ml+8,y+3.5);
+      y+=lines.length*2.4+0.8;
+      if(y>262){doc.addPage();y=14;}
+    }
+
+    y+=3;
+    setFont('normal',7.5);
+    txt('Tandatangan dan / atau cap ibu jari kiri Pemberi Hibah',ml+2,y+3.5);
+    y+=7; ln(ml,y+7,ml+cw/2-4,y+7);
+    txt('Nama : '+phNama,ml+1,y+10);
+    txt('No. K/P : '+phIC,ml+1,y+13);
+    txt('Tarikh: '+(globalTarikh||''),ml+cw/2+10,y+13);
+    y+=14;
+
+    // Jadual
+    if(y>245){doc.addPage();y=14;}
+    fillR(ml,y,cw,6,20,40,160);
+    setFont('bold',8); doc.setTextColor(255,255,255);
+    txt('JADUAL HARTA HIBAH (Peratusan pembahagian kepada Penerima Hibah)',ml+2,y+4);
+    y+=8; doc.setTextColor(0,0,0);
+
+    const allFunds=['ASB','ASB 2','ASB 3 Didik','ASM','ASM 2 Wawasan','ASM 3','ASN','ASN Equity 2','ASN Equity 3','ASN Equity 5','ASN Imbang 1','ASN Imbang 2','ASN Imbang 3','ASN Sara 1','ASN Sara 2','ASN Equity Global','ASN Sukuk'];
+    const colW=(cw-22)/allFunds.length; const rowH=8;
+    fillR(ml,y,22,rowH,240,240,240); fillR(ml+22,y,cw-22,rowH,240,240,240);
+    setFont('bold',5.5); rec(ml,y,22,rowH);
+    txt('Tabung Unit\nAmanah',ml+11,y+4,{align:'center'});
+    allFunds.forEach((fn,i)=>{rec(ml+22+i*colW,y,colW,rowH); txt(fn,ml+22+i*colW+colW/2,y+3.5,{align:'center',maxWidth:colW-1});});
+    y+=rowH;
+    setFont('bold',7); rec(ml,y,22,rowH); txt('Peratusan (%)',ml+11,y+5.5,{align:'center'});
+    allFunds.forEach((fn,i)=>{
+      rec(ml+22+i*colW,y,colW,rowH);
+      const v=document.querySelector(`[data-row="${index+1}"][data-fund="${fn}"]`)?.value||'';
+      const disp=(v&&parseInt(v)>0)?v+'%':'-';
+      setFont('normal',7); doc.setTextColor(0,0,0);
+      txt(disp,ml+22+i*colW+colW/2,y+5.8,{align:'center'});
+    });
+    y+=rowH+1;
+
+    // Section 1.1
+    if(y>230){doc.addPage();y=14;}
+    fillR(ml,y,cw,6,230,235,250); setFont('bold',8);
+    txt('1.1  LAFAZ PENERIMAAN HARTA HIBAH',ml+2,y+4); y+=6;
+    const isPj=pr.jenis==='penjaga';
+    rec(ml,y,4,4); if(!isPj){txt(' /',ml+0.5,y+3.3); doc.setTextColor(20,40,160);}
+    doc.setTextColor(0,0,0); txt('PENERIMA HIBAH DEWASA',ml+6,y+3.5); y+=6;
+    rec(ml,y,4,4); if(isPj){txt(' /',ml+0.5,y+3.3); doc.setTextColor(20,40,160);}
+    doc.setTextColor(0,0,0);
+    txt(isPj?`PENJAGA SAH kepada ${pr.nama}`:'PENJAGA SAH',ml+6,y+3.5); y+=4;
+
+    const prClauses=[
+      ['a)','Saya melantik Pemberi Hibah sebagai Pemegang Amanah kepada Harta Hibah dan membenarkan Pemberi Hibah menggunakan Harta Hibah untuk faedah dirinya selama mana Pemberi Hibah masih hidup.'],
+      ['b)','Saya faham bahawa selepas kematian Pemberi Hibah, jumlah yang dibayar kepada Penerima Hibah adalah baki unit semasa tabung unit amanah.'],
+      ['c)','Sekiranya saya meninggal dunia terlebih dahulu, Harta Hibah akan dikembalikan kepada Pemberi Hibah.'],
+      ['d)','Sekiranya saya meninggal dunia sebelum Harta Hibah diagihkan, seorang wasi hendaklah hadir ke ASNB.'],
+      ['e)','Saya melantik ASNB sebagai Pemegang Amanah Gantian untuk mentadbir Harta Hibah selepas kematian saya dan/atau Pemberi Hibah.'],
+      ['f)','Saya bersetuju untuk mengganti rugi ASNB terhadap apa-apa tindakan berhubung dengan Hibah Amanah ini.'],
+      ['g)','Saya mengaku bahawa maklumat saya dan peratusan pembahagian adalah lengkap semasa Akad ini ditandatangani.'],
+      ['h)','Saya faham bahawa pindaan boleh dilaksanakan pada bila-bila masa oleh Pemberi Hibah.'],
+      ['i)','Saya bersetuju membenarkan ASNB dan kakitangan yang terlibat mempunyai akses kepada maklumat peribadi saya bagi tujuan Hibah Amanah ini.'],
+    ];
+    setFont('normal',7); doc.setTextColor(30,30,30);
+    for(const [lbl,t] of prClauses){
+      if(y>262){doc.addPage();y=14;}
+      const lines=doc.splitTextToSize(t,cw-10);
+      txt(lbl,ml+1,y+3.5); txt(lines,ml+8,y+3.5);
+      y+=lines.length*2.4+0.8;
+    }
+    y+=3;
+    if(y>255){doc.addPage();y=14;}
+    setFont('normal',7.5); doc.setTextColor(0,0,0);
+    txt('Tandatangan dan / atau cap ibu jari kiri Penerima Hibah / Penjaga Sah',ml+2,y+3.5);
+    y+=7; ln(ml,y+7,ml+cw/2-4,y+7);
+    let dNama=pr.nama,dIC=pr.ic;
+    if(isPj){dNama=document.getElementById(`pj${index+1}-nama`)?.value||'-';dIC=document.getElementById(`pj${index+1}-ic`)?.value||'-';}
+    txt('Nama : '+(dNama||'-'),ml+1,y+10);
+    txt('No. K/P : '+(dIC||'-'),ml+1,y+13);
+    txt('Tarikh: '+(globalTarikh||''),ml+cw/2+10,y+10);
+    y+=16;
+    if(y+40>280){doc.addPage();y=14;}
+    txt('Disaksikan bahawa Pengakuan Hibah Amanah ini telah dilaksanakan dengan sebenar-benarnya.',ml+1,y);
+    y+=6;
+    const hw=cw/2-5,wx2=ml+hw+10;
+    txt('Tandatangan dan / atau cap ibu jari kiri Saksi 1',ml+2,y);
+    txt('Tandatangan dan / atau cap ibu jari kiri Saksi 2',wx2+2,y);
+    y+=4; ln(ml,y+7,ml+hw,y+7); ln(wx2,y+7,wx2+hw,y+7);
+    let sx1n='',sx1i='',sx2n='',sx2i='';
+    if(pr.saksiMode==='form'){
+      sx1n=document.getElementById(`sx1-${index+1}-nama`)?.value||'';
+      sx1i=document.getElementById(`sx1-${index+1}-ic`)?.value||'';
+      sx2n=document.getElementById(`sx2-${index+1}-nama`)?.value||'';
+      sx2i=document.getElementById(`sx2-${index+1}-ic`)?.value||'';
+    }
+    txt('Nama : '+sx1n,ml+1,y+10); txt('No. K/P : '+sx1i,ml+1,y+13); txt('Tarikh : '+(globalTarikh||''),ml+1,y+17);
+    txt('Nama : '+sx2n,wx2+1,y+10); txt('No. K/P : '+sx2i,wx2+1,y+13); txt('Tarikh : '+(globalTarikh||''),wx2+1,y+17);
+    y+=22; setFont('italic',7); doc.setTextColor(100,100,100);
+    txt('*Syarat Saksi : Lelaki dewasa Islam',ml,y); y+=4;
+    ln(ml,y,W-mr,y); y+=4;
+    setFont('normal',7); doc.setTextColor(80,80,80);
+    txt('Amanah Saham Nasional Berhad 197901003200 (47457-V) . Syarikat Unit Amanah Permodalan Nasional Berhad | 197801001190 (38218-X)',W/2,y,{align:'center'});
+  });
+
+  doc.save('AkadHibahAmanah.pdf');
+  showToast('📄 PDF Akad berjaya dimuat turun!');
+}
+
+function setHibah(type){
+  const adaBtn = document.querySelector('.toggle-btn.ada');
+  const tiadaBtn = document.querySelector('.toggle-btn.tiada');
+
+  adaBtn.classList.remove('active');
+  tiadaBtn.classList.remove('active');
+
+  if(type === 'ada'){
+    adaBtn.classList.add('active');
+  } else {
+    tiadaBtn.classList.add('active');
+  }
+}
+setHapaStatus(true);
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+buildPenerimaForms();
+</script>
+</body>
+</html>
